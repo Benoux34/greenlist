@@ -8,7 +8,9 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-COMPOSE=(docker compose -f docker-compose.prod.yml --env-file .env.prod)
+# api/.env is the only environment file on the server: Compose reads the
+# database settings from it, and the API container gets the whole file.
+COMPOSE=(docker compose -f docker-compose.prod.yml --env-file api/.env)
 
 echo "==> Pulling"
 git pull --ff-only

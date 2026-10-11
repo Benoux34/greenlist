@@ -3,7 +3,7 @@
 # Nothing is published on a public interface: the web container is bound to
 # 127.0.0.1 and the host's nginx (TLS) is what faces the internet.
 #
-#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#   docker compose -f docker-compose.prod.yml --env-file api/.env up -d --build
 
 name: greenlist-prod
 
@@ -38,8 +38,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      # Built here so the database password lives in one place (.env.prod).
-      # Every other setting comes from api/.env, mounted below.
+      # Built from the POSTGRES_* lines of api/.env, so the database password
+      # is written once. Every other setting is read from that same file,
+      # mounted below.
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
     volumes:
       - jwt:/app/config/jwt
