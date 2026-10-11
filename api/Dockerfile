@@ -18,8 +18,10 @@ COPY composer.json composer.lock symfony.lock ./
 RUN composer install --no-dev --no-scripts --no-progress --prefer-dist
 
 COPY . .
-RUN composer dump-autoload --no-dev --classmap-authoritative \
-    && php bin/console cache:clear
+# No cache warm-up here: the image carries no environment file. The container
+# gets its .env from the host at run time, and the start-up commands
+# below build the cache on first boot.
+RUN composer dump-autoload --no-dev --classmap-authoritative
 
 EXPOSE 80
 

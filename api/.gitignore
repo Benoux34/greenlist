@@ -12,3 +12,8 @@
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+# No environment file is versioned: everything lives in .env, which stays on
+# each machine (written by hand on the server).
+/.env
+/.env.*

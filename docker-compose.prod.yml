@@ -38,14 +38,19 @@ services:
       db:
         condition: service_healthy
     environment:
-      APP_SECRET: ${APP_SECRET}
+      # Built here so the database password lives in one place (.env.prod).
+      # Every other setting comes from api/.env, mounted below.
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
-      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
-      # Public address of the site: builds the return address registered on
-      # Redlist for the "sign in with Redlist" flow.
-      APP_URL: https://nature.redlist.dedyn.io
     volumes:
       - jwt:/app/config/jwt
+      # The API's only environment file: written by hand on the server, never
+      # committed. Compose refuses to start the service if it is missing.
+      - type: bind
+        source: ./api/.env
+        target: /app/.env
+        read_only: true
+        bind:
+          create_host_path: false
 
   web:
     build: ./front

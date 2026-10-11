@@ -21,11 +21,26 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    # No environment file is versioned, so the checks get throwaway values
+    # here. None of them is used outside this job.
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?serverVersion=16&charset=utf8
+      APP_ENV: dev
+      APP_SECRET: ci
+      APP_SHARE_DIR: var/share
+      DEFAULT_URI: http://localhost
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: ci
+      APP_URL: http://localhost
+      REDLIST_URL: http://localhost
+      REDLIST_CLIENT_ID: ""
 
     steps:
       - uses: actions/checkout@v5
+
+      # Symfony refuses to boot without its environment file, even an empty one.
+      - run: touch api/.env
 
       - uses: shivammathur/setup-php@v2
         with:
