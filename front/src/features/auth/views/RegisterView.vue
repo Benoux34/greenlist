@@ -7,6 +7,7 @@ import BaseInput from "@/shared/components/BaseInput.vue";
 import FormField from "@/shared/components/FormField.vue";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
 import { useAuthStore } from "../store";
+import RedlistButton from "../components/RedlistButton.vue";
 import { registerSchema } from "../schemas";
 
 const auth = useAuthStore();
@@ -111,6 +112,8 @@ async function submit(): Promise<void> {
         {{ submitting ? "Création…" : "Créer mon compte" }}
       </BaseButton>
     </form>
+
+    <RedlistButton />
 
     <div
       class="border-t border-paper-border pt-5 text-center text-xs text-ink-muted"

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { ApiError } from "@/shared/api/http";
 import BaseButton from "@/shared/components/BaseButton.vue";
 import BaseInput from "@/shared/components/BaseInput.vue";
 import FormField from "@/shared/components/FormField.vue";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
 import { useAuthStore } from "../store";
+import RedlistButton from "../components/RedlistButton.vue";
 import { loginSchema } from "../schemas";
 
 const auth = useAuthStore();
@@ -14,7 +15,17 @@ const router = useRouter();
 
 const form = reactive({ email: "", password: "" });
 const errors = ref<FieldErrors<typeof form>>({});
-const formError = ref<string | null>(null);
+// Set by the API when a sign-in through Redlist comes back without a session.
+const REDLIST_ERRORS: Record<string, string> = {
+  email_taken:
+    "Un compte existe déjà avec cette adresse. Connectez-vous avec votre mot de passe.",
+  redlist: "La connexion via Redlist n'a pas abouti. Réessayez.",
+};
+
+const route = useRoute();
+const formError = ref<string | null>(
+  REDLIST_ERRORS[String(route.query.error)] ?? null,
+);
 const submitting = ref(false);
 
 async function submit(): Promise<void> {
@@ -96,6 +107,8 @@ async function submit(): Promise<void> {
         {{ submitting ? "Connexion…" : "Se connecter" }}
       </BaseButton>
     </form>
+
+    <RedlistButton />
 
     <div
       class="border-t border-paper-border pt-5 text-center text-xs text-ink-muted"
