@@ -16,7 +16,7 @@ const year = new Date().getFullYear();
     </main>
 
     <footer class="mx-auto w-full max-w-6xl text-center text-xs text-ink-faint">
-      <p>© {{ year }} FAUNEFLORE • Carnet d'observation de la nature.</p>
+      <p>© {{ year }} GREENLIST • Carnet d'observation de la nature.</p>
     </footer>
   </div>
 </template>

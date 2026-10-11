@@ -45,7 +45,7 @@ async function submit(): Promise<void> {
       Créer un compte
     </h1>
     <p class="mb-8 text-sm leading-relaxed text-ink-muted">
-      Rejoignez Faunia pour consigner vos observations et les retrouver sur
+      Rejoignez Greenlist pour consigner vos observations et les retrouver sur
       votre carte.
     </p>
 
