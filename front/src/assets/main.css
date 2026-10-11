@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/newsreader";
+
+@theme {
+  --font-sans: "Inter Variable", sans-serif;
+  --font-serif: "Newsreader Variable", Georgia, serif;
+
+  --color-paper: oklch(98.5% 0.005 85);
+  --color-paper-muted: oklch(96% 0.008 85);
+  --color-paper-border: oklch(88% 0.01 85);
+  --color-paper-border-strong: oklch(75% 0.015 85);
+
+  --color-ink: oklch(20% 0.02 50);
+  --color-ink-muted: oklch(44% 0.02 50);
+  --color-ink-faint: oklch(62% 0.015 50);
+
+  --color-status-cr: oklch(48% 0.16 28);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  ::selection {
+    background-color: var(--color-paper-muted);
+    color: var(--color-ink);
+  }
+}

@@ -1,0 +1,7 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: App\User\Entity\RefreshToken
+    single_use: true
+    hash_tokens: true
+    cookie:
+        enabled: true
+        path: /api/auth
