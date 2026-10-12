@@ -73,7 +73,7 @@ async function request<T>(
 
 const http = {
   get: <T>(path: string, signal?: AbortSignal) =>
-    request<T>("GET", path, signal),
+    request<T>("GET", path, undefined, signal),
   post: <T>(path: string, body?: unknown, signal?: AbortSignal) =>
     request<T>("POST", path, body, signal),
 };
