@@ -9,6 +9,7 @@ import { CATEGORIES } from "@/features/species/categories";
 import SpeciesAutocomplete from "@/features/species/components/SpeciesAutocomplete.vue";
 import LocationPicker from "@/features/map/components/LocationPicker.vue";
 import PlaceSearch from "@/features/map/components/PlaceSearch.vue";
+import PhotoPicker from "../components/PhotoPicker.vue";
 import { useObservationForm } from "../composables/useObservationForm";
 
 const {
@@ -26,6 +27,8 @@ const {
 const unit = computed(() =>
   form.species === null ? "" : CATEGORIES[form.species.category].unit[1],
 );
+
+const MAX_PHOTOS = 3;
 
 const LINK =
   "inline-flex min-h-11 items-center text-sm text-ink-muted transition-colors hover:text-ink";
@@ -141,6 +144,14 @@ const LINK =
           Vous pouvez aussi placer le repère sur la carte, puis le faire glisser
           pour l'ajuster.
         </p>
+      </FormField>
+
+      <FormField id="observation-photos" label="Photos (facultatif)">
+        <PhotoPicker
+          id="observation-photos"
+          v-model="form.photos"
+          :max="MAX_PHOTOS"
+        />
       </FormField>
 
       <FormField

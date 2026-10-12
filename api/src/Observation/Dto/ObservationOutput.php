@@ -9,6 +9,9 @@ use App\Species\Dto\SpeciesSummary;
 
 final readonly class ObservationOutput
 {
+    /**
+     * @param list<string> $photos
+     */
     public function __construct(
         public string $id,
         public SpeciesSummary $species,
@@ -17,6 +20,7 @@ final readonly class ObservationOutput
         public float $longitude,
         public ?int $count,
         public ?string $notes,
+        public array $photos,
     ) {
     }
 
@@ -30,6 +34,7 @@ final readonly class ObservationOutput
             $observation->getLongitude(),
             $observation->getCount(),
             $observation->getNotes(),
+            $observation->getPhotos(),
         );
     }
 }

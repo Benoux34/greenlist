@@ -11,6 +11,7 @@ type Observation = Readonly<{
   longitude: number;
   count: number | null;
   notes: string | null;
+  photos: string[];
 }>;
 
 type ObservationFilters = Readonly<{

@@ -41,15 +41,17 @@ async function request<T>(
   signal?: AbortSignal,
   retry = true,
 ): Promise<T> {
+  const isForm = body instanceof FormData;
   const response = await fetch(`/api${path}`, {
     method,
     signal,
     credentials: "include",
     headers: {
       Accept: "application/json",
-      ...(body !== undefined && { "Content-Type": "application/json" }),
+      ...(body !== undefined &&
+        !isForm && { "Content-Type": "application/json" }),
     },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined || isForm ? body : JSON.stringify(body),
   });
 
   if (

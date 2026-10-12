@@ -26,4 +26,19 @@ function fetchObservations(
 const createObservation = (input: CreateObservationInput) =>
   http.post<Observation>("/observations", input);
 
-export { fetchObservations, createObservation };
+function addObservationPhoto(id: string, photo: Blob): Promise<Observation> {
+  const body = new FormData();
+  body.append("photo", photo, "photo.jpg");
+
+  return http.post<Observation>(`/observations/${id}/photos`, body);
+}
+
+const observationPhotoUrl = (id: string, name: string) =>
+  `/api/observations/${id}/photos/${name}`;
+
+export {
+  fetchObservations,
+  createObservation,
+  addObservationPhoto,
+  observationPhotoUrl,
+};

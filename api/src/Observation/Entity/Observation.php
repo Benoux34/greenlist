@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observation\Entity;
 
 use App\Observation\Repository\ObservationRepository;
+use App\Observation\Exception\TooManyPhotosException;
 use App\Species\Entity\Species;
 use App\User\Entity\User;
 use Doctrine\DBAL\Types\Types;
@@ -16,6 +17,8 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(name: 'observation_author_observed_at_idx', fields: ['author', 'observedAt'])]
 final class Observation
 {
+    public const int MAX_PHOTOS = 3;
+
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
     private Uuid $id;
@@ -42,6 +45,9 @@ final class Observation
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes;
+
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $photos = [];
 
     #[ORM\Column]
     private readonly \DateTimeImmutable $createdAt;
@@ -99,5 +105,24 @@ final class Observation
     public function getNotes(): ?string
     {
         return $this->notes;
+    }
+
+    public function getAuthor(): User
+    {
+        return $this->author;
+    }
+
+    public function getPhotos(): array
+    {
+        return $this->photos;
+    }
+
+    public function addPhoto(string $name): void
+    {
+        if (\count($this->photos) >= self::MAX_PHOTOS) {
+            throw new TooManyPhotosException(\sprintf('An observation holds %d photos at most.', self::MAX_PHOTOS));
+        }
+
+        $this->photos[] = $name;
     }
 }

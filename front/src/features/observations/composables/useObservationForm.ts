@@ -5,7 +5,8 @@ import { useGeolocation } from "@/shared/composables/useGeolocation";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
 import type { SpeciesSuggestion } from "@/features/species/entities";
 import type { Coordinates } from "@/features/map/entities";
-import { createObservation } from "../api";
+import { addObservationPhoto, createObservation } from "../api";
+import type { Observation } from "../entities";
 import { observationSchema } from "../schemas";
 
 function localNow(): string {
@@ -25,12 +26,15 @@ function useObservationForm() {
     species: null as SpeciesSuggestion | null,
     observedAt: latestMoment,
     position: null as Coordinates | null,
+    photos: [] as Blob[],
     count: "",
     notes: "",
   });
   const errors = ref<FieldErrors<typeof form>>({});
   const formError = ref<string | null>(null);
   const isSubmitting = ref(false);
+
+  let created: Observation | null = null;
 
   for (const field of Object.keys(form) as (keyof typeof form)[])
     watch(
@@ -65,7 +69,7 @@ function useObservationForm() {
 
     isSubmitting.value = true;
     try {
-      await createObservation({
+      created ??= await createObservation({
         inatId: parsed.data.species.inatId,
         observedAt: parsed.data.observedAt.toISOString(),
         latitude: parsed.data.position.latitude,
@@ -73,12 +77,20 @@ function useObservationForm() {
         count: parsed.data.count,
         notes: parsed.data.notes === "" ? null : parsed.data.notes,
       });
+
+      for (const photo of [...form.photos]) {
+        await addObservationPhoto(created.id, photo);
+        form.photos = form.photos.filter((other) => other !== photo);
+      }
+
       await router.push({ name: "observations" });
     } catch (error) {
       formError.value =
-        error instanceof ApiError && error.status === 503
-          ? "Le service d'identification des espèces ne répond pas. Réessayez dans un instant."
-          : "L'observation n'a pas pu être enregistrée. Réessayez.";
+        created !== null
+          ? "L'observation est enregistrée, mais une photo n'a pas pu être envoyée. Réessayez."
+          : error instanceof ApiError && error.status === 503
+            ? "Le service d'identification des espèces ne répond pas. Réessayez dans un instant."
+            : "L'observation n'a pas pu être enregistrée. Réessayez.";
     } finally {
       isSubmitting.value = false;
     }
