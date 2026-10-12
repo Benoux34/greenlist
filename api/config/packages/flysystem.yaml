@@ -1,0 +1,7 @@
+flysystem:
+    storages:
+        photos.storage:
+            adapter: "asyncaws"
+            options:
+                client: 'AsyncAws\S3\S3Client'
+                bucket: "%env(S3_BUCKET)%"
