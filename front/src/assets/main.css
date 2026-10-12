@@ -16,6 +16,10 @@
   --color-ink-faint: oklch(62% 0.015 50);
 
   --color-status-cr: oklch(48% 0.16 28);
+
+  --color-category-fauna: oklch(52% 0.13 65);
+  --color-category-flora: oklch(48% 0.1 150);
+  --color-category-fungi: oklch(42% 0.08 320);
 }
 
 @layer base {

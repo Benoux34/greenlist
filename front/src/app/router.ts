@@ -4,6 +4,8 @@ import { useAuthStore } from "@/features/auth/store";
 import LoginView from "@/features/auth/views/LoginView.vue";
 import RegisterView from "@/features/auth/views/RegisterView.vue";
 import HomeView from "@/features/home/views/HomeView.vue";
+import ObservationListView from "@/features/observations/views/ObservationListView.vue";
+import ObservationFormView from "@/features/observations/views/ObservationFormView.vue";
 import AppLayout from "./AppLayout.vue";
 
 declare module "vue-router" {
@@ -30,7 +32,19 @@ const router = createRouter({
     {
       path: "/",
       component: AppLayout,
-      children: [{ path: "", name: "home", component: HomeView }],
+      children: [
+        { path: "", name: "home", component: HomeView },
+        {
+          path: "observations",
+          name: "observations",
+          component: ObservationListView,
+        },
+        {
+          path: "observations/new",
+          name: "observation-new",
+          component: ObservationFormView,
+        },
+      ],
     },
     { path: "/:pathMatch(.*)*", redirect: { name: "home" } },
   ],

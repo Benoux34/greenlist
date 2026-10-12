@@ -14,6 +14,11 @@ class ApiError extends Error {
 const NO_REFRESH = ["/auth/login", "/auth/register", "/auth/refresh"];
 
 let refreshing: Promise<boolean> | null = null;
+let onSessionLost: () => void = () => {};
+
+function setSessionLostHandler(handler: () => void): void {
+  onSessionLost = handler;
+}
 
 function refreshSession(): Promise<boolean> {
   refreshing ??= fetch("/api/auth/refresh", {
@@ -33,10 +38,12 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
+  signal?: AbortSignal,
   retry = true,
 ): Promise<T> {
   const response = await fetch(`/api${path}`, {
     method,
+    signal,
     credentials: "include",
     headers: {
       Accept: "application/json",
@@ -51,7 +58,9 @@ async function request<T>(
     !NO_REFRESH.includes(path) &&
     (await refreshSession())
   )
-    return request<T>(method, path, body, false);
+    return request<T>(method, path, body, signal, false);
+
+  if (response.status === 401 && !NO_REFRESH.includes(path)) onSessionLost();
 
   if (!response.ok)
     throw new ApiError(
@@ -63,8 +72,10 @@ async function request<T>(
 }
 
 const http = {
-  get: <T>(path: string) => request<T>("GET", path),
-  post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  get: <T>(path: string, signal?: AbortSignal) =>
+    request<T>("GET", path, signal),
+  post: <T>(path: string, body?: unknown, signal?: AbortSignal) =>
+    request<T>("POST", path, body, signal),
 };
 
-export { ApiError, http };
+export { ApiError, setSessionLostHandler, http };

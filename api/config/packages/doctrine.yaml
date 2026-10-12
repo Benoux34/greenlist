@@ -20,6 +20,19 @@ doctrine:
                 dir: "%kernel.project_dir%/src/User/Entity"
                 prefix: 'App\User\Entity'
                 alias: User
+            Species:
+                type: attribute
+                is_bundle: false
+                dir: "%kernel.project_dir%/src/Species/Entity"
+                prefix: 'App\Species\Entity'
+                alias: Species
+            Observation:
+                type: attribute
+                is_bundle: false
+                dir: "%kernel.project_dir%/src/Observation/Entity"
+                prefix: 'App\Observation\Entity'
+                alias: Observation
+
 
 when@test:
     doctrine:
