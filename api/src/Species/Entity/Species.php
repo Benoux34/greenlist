@@ -66,9 +66,9 @@ final class Species
         $this->category = Category::fromKingdom($kingdom);
     }
 
-    public function getId(): Uuid
+    public function getInatId(): int
     {
-        return $this->id;
+        return $this->inatId;
     }
 
     public function getScientificName(): string
@@ -84,5 +84,30 @@ final class Species
     public function getCategory(): Category
     {
         return $this->category;
+    }
+
+    public function getKingdom(): string
+    {
+        return $this->kingdom;
+    }
+
+    public function getPhylum(): ?string
+    {
+        return $this->phylum;
+    }
+
+    public function getTaxonClass(): ?string
+    {
+        return $this->taxonClass;
+    }
+
+    public function getTaxonOrder(): ?string
+    {
+        return $this->taxonOrder;
+    }
+
+    public function getFamily(): ?string
+    {
+        return $this->family;
     }
 }

@@ -1,25 +1,32 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter";
-@import "@fontsource-variable/newsreader";
+@import "@fontsource-variable/fraunces";
 
-@theme {
+@theme static {
   --font-sans: "Inter Variable", sans-serif;
-  --font-serif: "Newsreader Variable", Georgia, serif;
+  --font-serif: "Fraunces Variable", Georgia, serif;
 
-  --color-paper: oklch(98.5% 0.005 85);
-  --color-paper-muted: oklch(96% 0.008 85);
-  --color-paper-border: oklch(88% 0.01 85);
-  --color-paper-border-strong: oklch(75% 0.015 85);
+  --color-paper: #f7f6f2;
+  --color-paper-muted: #efede6;
+  --color-paper-border: #e3e0d6;
+  --color-paper-border-strong: #c9c5b8;
+  --color-surface: #ffffff;
 
-  --color-ink: oklch(20% 0.02 50);
-  --color-ink-muted: oklch(44% 0.02 50);
-  --color-ink-faint: oklch(62% 0.015 50);
+  --color-ink: #1c2421;
+  --color-ink-muted: #4f5954;
+  --color-ink-faint: #6b736e;
 
-  --color-status-cr: oklch(48% 0.16 28);
+  --color-accent: #2e6b4f;
+  --color-accent-strong: #24563f;
+  --color-accent-soft: #e2eee7;
 
-  --color-category-fauna: oklch(52% 0.13 65);
-  --color-category-flora: oklch(48% 0.1 150);
-  --color-category-fungi: oklch(42% 0.08 320);
+  --color-location: #2b6fd6;
+  --color-map-water: #b9d3e6;
+  --color-status-cr: #b4432f;
+
+  --color-category-fauna: #d9822b;
+  --color-category-flora: #3e8e5e;
+  --color-category-fungi: #8b5e9c;
 }
 
 @layer base {
@@ -29,7 +36,7 @@
   }
 
   ::selection {
-    background-color: var(--color-paper-muted);
+    background-color: var(--color-accent-soft);
     color: var(--color-ink);
   }
 }

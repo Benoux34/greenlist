@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Place\Geocoder;
 
-use App\Place\Dto\PlaceSuggestion;
-use App\Place\Exception\PlaceLookupFailedException;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -21,45 +19,37 @@ final readonly class PhotonGeocoder implements GeocoderInterface
     ) {
     }
 
-    public function search(string $text): array
+    public function placeName(float $latitude, float $longitude): ?string
     {
-        return $this->cache->get('photon_'.md5(mb_strtolower($text)), function (ItemInterface $item) use ($text): array {
-            $item->expiresAfter(3600);
+        $key = \sprintf('photon_reverse_%.4f_%.4f', $latitude, $longitude);
 
-            try {
-                $features = $this->http
-                    ->request('GET', 'api/', ['query' => ['q' => $text, 'lang' => 'fr', 'limit' => 5]])
-                    ->toArray()['features'] ?? [];
-            } catch (ExceptionInterface $exception) {
-                throw new PlaceLookupFailedException('Photon could not be reached.', previous: $exception);
-            }
+        try {
+            return $this->cache->get($key, function (ItemInterface $item) use ($latitude, $longitude): ?string {
+                $item->expiresAfter(2592000);
 
-            return array_map($this->toSuggestion(...), $features);
-        });
+                $place = $this->http
+                    ->request('GET', 'reverse', ['query' => ['lat' => $latitude, 'lon' => $longitude, 'lang' => 'fr', 'limit' => 1]])
+                    ->toArray()['features'][0]['properties'] ?? null;
+
+                return null === $place ? null : $this->placeLabel($place);
+            });
+        } catch (ExceptionInterface) {
+            return null;
+        }
     }
 
     /**
-     * @param array<string, mixed> $feature
+     * @param array<string, mixed> $place
      */
-    private function toSuggestion(array $feature): PlaceSuggestion
+    private function placeLabel(array $place): ?string
     {
-        $place = $feature['properties'] ?? [];
-        [$longitude, $latitude] = $feature['geometry']['coordinates'];
-
-        $street = trim(($place['housenumber'] ?? '').' '.($place['street'] ?? ''));
-        $city = trim(($place['postcode'] ?? '').' '.($place['city'] ?? ''));
-
         $parts = [
-            $place['name'] ?? '',
-            $street,
-            '' === $city ? ($place['state'] ?? '') : $city,
+            $place['city'] ?? $place['locality'] ?? $place['name'] ?? '',
+            $place['county'] ?? $place['state'] ?? '',
             $place['country'] ?? '',
         ];
+        $label = implode(', ', array_unique(array_filter($parts, static fn (string $part): bool => '' !== $part)));
 
-        return new PlaceSuggestion(
-            implode(', ', array_unique(array_filter($parts, static fn (string $part): bool => '' !== $part))),
-            (float) $latitude,
-            (float) $longitude,
-        );
+        return '' === $label ? null : $label;
     }
 }

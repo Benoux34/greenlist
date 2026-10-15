@@ -1,0 +1,15 @@
+// The tests live in tests/front, outside this package: "paths" lets
+// TypeScript find their dependencies in this node_modules (types first).
+{
+  "extends": "./tsconfig.app.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "../tests/front/**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "*": ["./node_modules/@types/*", "./node_modules/*"]
+    },
+    "types": ["node"],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo"
+  }
+}

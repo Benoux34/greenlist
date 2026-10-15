@@ -1,13 +1,9 @@
-import type { ApiProblem } from "./entities";
-
 class ApiError extends Error {
   readonly status: number;
-  readonly problem: ApiProblem | null;
 
-  constructor(status: number, problem: ApiProblem | null) {
-    super(problem?.detail ?? `HTTP ${status}`);
+  constructor(status: number) {
+    super(`HTTP ${status}`);
     this.status = status;
-    this.problem = problem;
   }
 }
 
@@ -64,11 +60,7 @@ async function request<T>(
 
   if (response.status === 401 && !NO_REFRESH.includes(path)) onSessionLost();
 
-  if (!response.ok)
-    throw new ApiError(
-      response.status,
-      await response.json().catch(() => null),
-    );
+  if (!response.ok) throw new ApiError(response.status);
 
   return (response.status === 204 ? undefined : await response.json()) as T;
 }
@@ -76,8 +68,9 @@ async function request<T>(
 const http = {
   get: <T>(path: string, signal?: AbortSignal) =>
     request<T>("GET", path, undefined, signal),
-  post: <T>(path: string, body?: unknown, signal?: AbortSignal) =>
-    request<T>("POST", path, body, signal),
+  post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  patch: <T>(path: string, body: unknown) => request<T>("PATCH", path, body),
+  delete: <T = void>(path: string) => request<T>("DELETE", path),
 };
 
 export { ApiError, setSessionLostHandler, http };

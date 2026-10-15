@@ -39,8 +39,26 @@ final readonly class ObservationPhotos
         return $this->photosStorage->readStream($this->path($observation, $name));
     }
 
+    public function remove(Observation $observation, string $name): void
+    {
+        $observation->removePhoto($name);
+
+        $this->observations->save($observation);
+        $this->photosStorage->delete($this->path($observation, $name));
+    }
+
+    public function removeAll(Observation $observation): void
+    {
+        $this->photosStorage->deleteDirectory($this->folder($observation));
+    }
+
+    private function folder(Observation $observation): string
+    {
+        return 'observations/'.$observation->getId();
+    }
+
     private function path(Observation $observation, string $name): string
     {
-        return 'observations/'.$observation->getId().'/'.$name;
+        return $this->folder($observation).'/'.$name;
     }
 }

@@ -17,3 +17,8 @@
 # each machine (written by hand on the server).
 /.env
 /.env.*
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

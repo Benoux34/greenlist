@@ -1,0 +1,10 @@
+when@test:
+    zenstruck_foundry:
+        persistence:
+            # Flush only once per call of `PersistentObjectFactory::create()`
+            flush_once: true
+        # The test database is built by the migrations, so the tests also
+        # check that they produce a schema the entities can use.
+        orm:
+            reset:
+                mode: migrate

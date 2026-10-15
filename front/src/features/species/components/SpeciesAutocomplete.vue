@@ -3,7 +3,7 @@ import { computed, nextTick, ref, useId, useTemplateRef, watch } from "vue";
 import BaseInput from "@/shared/components/BaseInput.vue";
 import { CATEGORIES } from "../categories";
 import { useSpeciesSearch } from "../composables/useSpeciesSearch";
-import type { SpeciesCategory, SpeciesSuggestion } from "../entities";
+import type { SpeciesCategory, SpeciesSuggestion } from "../types";
 import CategoryPills from "./CategoryPills.vue";
 
 const selected = defineModel<SpeciesSuggestion | null>({ required: true });
@@ -64,87 +64,87 @@ function confirm(): void {
 </script>
 
 <template>
-  <div class="space-y-3">
-    <CategoryPills v-if="selected === null" v-model="category" />
-
-    <div class="relative flex items-end gap-3">
-      <div class="min-w-0 flex-1">
-        <label
-          :for="id"
-          class="mb-2 block text-xs font-medium tracking-wider text-ink-muted uppercase"
+  <div class="space-y-2.5">
+    <div
+      v-if="selected"
+      class="flex h-11 items-center gap-2.5 rounded-xl border border-paper-border bg-surface pl-1.5"
+    >
+      <img
+        v-if="selected.photoUrl"
+        :src="selected.photoUrl"
+        alt=""
+        class="size-8 shrink-0 rounded-lg object-cover"
+      />
+      <span
+        v-else
+        class="ml-2 size-2 shrink-0 rounded-full"
+        :class="CATEGORIES[selected.category].dot"
+        aria-hidden="true"
+      ></span>
+      <p class="min-w-0 flex-1 truncate text-sm">
+        <span class="font-medium">
+          {{ selected.vernacularName ?? selected.scientificName }}
+        </span>
+        <span
+          v-if="selected.vernacularName"
+          class="ml-1.5 font-serif text-ink-muted italic"
         >
-          Nom
-        </label>
+          {{ selected.scientificName }}
+        </span>
+      </p>
+      <button
+        type="button"
+        class="h-full shrink-0 cursor-pointer px-3.5 text-sm font-medium text-accent underline-offset-4 hover:underline"
+        @click="change"
+      >
+        Changer
+      </button>
+    </div>
 
-        <div
-          v-if="selected"
-          class="flex h-10 items-center gap-2 border border-paper-border pl-1.5"
-        >
-          <img
-            v-if="selected.photoUrl"
-            :src="selected.photoUrl"
-            alt=""
-            class="size-7 shrink-0 object-cover"
-          />
-          <p class="min-w-0 flex-1 truncate text-sm">
-            <span class="font-medium">
-              {{ selected.vernacularName ?? selected.scientificName }}
-            </span>
-            <span
-              v-if="selected.vernacularName"
-              class="ml-2 hidden font-serif text-ink-muted italic sm:inline"
-            >
-              {{ selected.scientificName }}
-            </span>
-          </p>
-          <button
-            type="button"
-            class="h-full shrink-0 cursor-pointer px-3 text-xs text-ink-muted underline underline-offset-4 transition-colors hover:text-ink"
-            @click="change"
-          >
-            Changer
-          </button>
-        </div>
+    <template v-else>
+      <CategoryPills v-model="category" />
 
-        <BaseInput
-          v-else
-          :id="id"
-          ref="input"
-          v-model="text"
-          type="text"
-          role="combobox"
-          autocomplete="off"
-          autocapitalize="off"
-          spellcheck="false"
-          placeholder="Chêne, mésange, cèpe…"
-          aria-autocomplete="list"
-          :aria-expanded="isOpen"
-          :aria-controls="listId"
-          :aria-activedescendant="
-            activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
-          "
-          :aria-invalid="invalid"
-          @focus="isOpen = true"
-          @blur="isOpen = false"
-          @input="isOpen = true"
-          @keydown.down.prevent="move(1)"
-          @keydown.up.prevent="move(-1)"
-          @keydown.enter.prevent="confirm"
-          @keydown.esc="isOpen = false"
-        />
-      </div>
-
-      <slot />
+      <BaseInput
+        :id="id"
+        ref="input"
+        v-model="text"
+        type="text"
+        role="combobox"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="Chêne, mésange, cèpe…"
+        aria-autocomplete="list"
+        :aria-expanded="isOpen"
+        :aria-controls="listId"
+        :aria-activedescendant="
+          activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
+        "
+        :aria-invalid="invalid"
+        @focus="isOpen = true"
+        @blur="isOpen = false"
+        @input="isOpen = true"
+        @keydown.down.prevent="move(1)"
+        @keydown.up.prevent="move(-1)"
+        @keydown.enter.prevent="confirm"
+        @keydown.esc="isOpen = false"
+      />
 
       <div
         v-show="isOpen"
-        class="absolute inset-x-0 top-full z-20 mt-1 max-h-80 overflow-y-auto border border-paper-border bg-paper shadow-sm"
+        class="overflow-hidden rounded-2xl border border-paper-border bg-surface"
       >
-        <p v-if="status" role="status" class="px-3 py-3 text-sm text-ink-muted">
+        <p v-if="status" role="status" class="px-3.5 py-3 text-sm text-ink-muted">
           {{ status }}
         </p>
 
-        <ul v-else :id="listId" role="listbox" aria-label="Espèces proposées">
+        <ul
+          v-else
+          :id="listId"
+          role="listbox"
+          aria-label="Espèces proposées"
+          class="max-h-72 overflow-y-auto py-1"
+        >
           <li
             v-for="(suggestion, index) in suggestions"
             :id="`${listId}-${index}`"
@@ -161,11 +161,11 @@ function confirm(): void {
               :src="suggestion.photoUrl"
               alt=""
               loading="lazy"
-              class="size-10 shrink-0 object-cover"
+              class="size-10 shrink-0 rounded-lg object-cover"
             />
             <span
               v-else
-              class="size-10 shrink-0 bg-paper-muted"
+              class="size-10 shrink-0 rounded-lg bg-paper-muted"
               aria-hidden="true"
             ></span>
 
@@ -182,13 +182,13 @@ function confirm(): void {
             </span>
 
             <span
-              class="h-1.5 w-1.5 shrink-0 rounded-full"
+              class="size-2 shrink-0 rounded-full"
               :class="CATEGORIES[suggestion.category].dot"
               :title="CATEGORIES[suggestion.category].label"
             ></span>
           </li>
         </ul>
       </div>
-    </div>
+    </template>
   </div>
 </template>

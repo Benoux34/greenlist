@@ -47,7 +47,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "App\\Tests\\": "../tests/api/"
         }
     },
     "replace": {
@@ -61,6 +61,7 @@
         "symfony/polyfill-php82": "*"
     },
     "scripts": {
+        "test": "phpunit",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
@@ -81,5 +82,11 @@
             "require": "7.4.*",
             "docker": true
         }
+    },
+    "require-dev": {
+        "dama/doctrine-test-bundle": "^8.7",
+        "phpunit/phpunit": "^13.4",
+        "symfony/browser-kit": "7.4.*",
+        "zenstruck/foundry": "^2.14"
     }
 }

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Observation\Entity;
 
-use App\Observation\Repository\ObservationRepository;
+use App\Observation\Exception\PhotoNotFoundException;
 use App\Observation\Exception\TooManyPhotosException;
+use App\Observation\Repository\ObservationRepository;
 use App\Species\Entity\Species;
 use App\User\Entity\User;
 use Doctrine\DBAL\Types\Types;
@@ -63,13 +64,26 @@ final class Observation
     ) {
         $this->id = Uuid::v7();
         $this->author = $author;
+        $this->createdAt = new \DateTimeImmutable();
+        $this->edit($species, $observedAt, $latitude, $longitude, $count, $notes);
+    }
+
+    public function edit(
+        Species $species,
+        \DateTimeImmutable $observedAt,
+        float $latitude,
+        float $longitude,
+        ?int $count,
+        ?string $notes,
+    ): void {
+        $notes = trim($notes ?? '');
+
         $this->species = $species;
-        $this->observedAt = $observedAt;
+        $this->observedAt = $observedAt->setTimezone(new \DateTimeZone('UTC'));
         $this->latitude = $latitude;
         $this->longitude = $longitude;
         $this->count = $count;
-        $this->notes = $notes;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->notes = '' === $notes ? null : $notes;
     }
 
     public function getId(): Uuid
@@ -124,5 +138,14 @@ final class Observation
         }
 
         $this->photos[] = $name;
+    }
+
+    public function removePhoto(string $name): void
+    {
+        if (!\in_array($name, $this->photos, true)) {
+            throw new PhotoNotFoundException('This observation has no such photo.');
+        }
+
+        $this->photos = array_values(array_diff($this->photos, [$name]));
     }
 }

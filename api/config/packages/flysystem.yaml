@@ -5,3 +5,12 @@ flysystem:
             options:
                 client: 'AsyncAws\S3\S3Client'
                 bucket: "%env(S3_BUCKET)%"
+
+# Tests never write to the real bucket.
+when@test:
+    flysystem:
+        storages:
+            photos.storage:
+                adapter: "local"
+                options:
+                    directory: "%kernel.project_dir%/var/test/photos"

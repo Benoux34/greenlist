@@ -10,7 +10,7 @@ use App\Species\Entity\Category;
 final readonly class SpeciesSummary
 {
     public function __construct(
-        public string $id,
+        public int $inatId,
         public string $scientificName,
         public ?string $vernacularName,
         public Category $category,
@@ -20,7 +20,7 @@ final readonly class SpeciesSummary
     public static function fromEntity(Species $species): self
     {
         return new self(
-            (string) $species->getId(),
+            $species->getInatId(),
             $species->getScientificName(),
             $species->getVernacularName(),
             $species->getCategory(),

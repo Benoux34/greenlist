@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observation\Service;
 
-use App\Observation\Dto\CreateObservationInput;
+use App\Observation\Dto\ObservationInput;
 use App\Observation\Entity\Observation;
 use App\Observation\Repository\ObservationRepository;
 use App\Species\Service\SpeciesResolver;
@@ -18,18 +18,16 @@ final readonly class CreateObservation
     ) {
     }
 
-    public function __invoke(User $author, CreateObservationInput $input): Observation
+    public function __invoke(User $author, ObservationInput $input): Observation
     {
-        $notes = trim($input->notes ?? '');
-
         $observation = new Observation(
             $author,
             $this->speciesResolver->resolve($input->inatId),
-            $input->observedAt->setTimezone(new \DateTimeZone('UTC')),
+            $input->observedAt,
             $input->latitude,
             $input->longitude,
             $input->count,
-            '' === $notes ? null : $notes,
+            $input->notes,
         );
 
         $this->observations->save($observation);

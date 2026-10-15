@@ -10,7 +10,8 @@ export default defineConfig({
   plugins: [vue(), vueDevTools(), tailwindcss()],
   server: {
     proxy: {
-      "/api": "http://127.0.0.1:8000",
+      // The end-to-end tests point the front to their own API.
+      "/api": process.env.API_URL ?? "http://127.0.0.1:8000",
     },
   },
   resolve: {

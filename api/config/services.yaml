@@ -29,3 +29,16 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+# The tests and the end-to-end runs never call iNaturalist, Photon or Wikipedia.
+when@test:
+    services:
+        App\Species\Inaturalist\InaturalistClientInterface:
+            class: App\Tests\Double\FakeInaturalistClient
+        App\Place\Geocoder\GeocoderInterface:
+            class: App\Tests\Double\FakeGeocoder
+        App\Species\Wikipedia\WikipediaClientInterface:
+            class: App\Tests\Double\FakeWikipediaClient
+        # Expected errors (403, 422…) would otherwise flood the test output.
+        logger:
+            class: Psr\Log\NullLogger

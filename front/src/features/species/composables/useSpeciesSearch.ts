@@ -1,6 +1,6 @@
 import { onScopeDispose, ref, watch, type Ref } from "vue";
 import { searchSpecies } from "../api";
-import type { SpeciesCategory, SpeciesSuggestion } from "../entities";
+import type { SpeciesCategory, SpeciesSuggestion } from "../types";
 
 const MIN_LENGTH = 2;
 const DELAY = 300;

@@ -5,15 +5,27 @@ import { RouterLink } from "vue-router";
 <template>
   <RouterLink
     to="/"
-    class="group flex items-baseline transition-opacity hover:opacity-80"
+    class="flex items-center gap-2 transition-opacity hover:opacity-80"
   >
-    <p
-      class="pt-1 pr-1 font-serif text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
-    >
-      GREENLIST
-    </p>
     <span
-      class="h-1.5 w-1.5 rounded-full bg-status-cr transition-transform group-hover:scale-125"
-    ></span>
+      class="flex size-7 items-center justify-center rounded-full bg-accent text-surface"
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        class="size-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14z" />
+        <path d="M5 19l8-8" />
+      </svg>
+    </span>
+    <span class="font-serif text-lg font-semibold tracking-tight text-ink">
+      Greenlist
+    </span>
   </RouterLink>
 </template>

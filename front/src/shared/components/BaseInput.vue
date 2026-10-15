@@ -5,6 +5,6 @@ const model = defineModel<string>({ required: true });
 <template>
   <input
     v-model="model"
-    class="h-10 w-full min-w-0 border border-paper-border bg-transparent px-3 py-2 text-sm text-ink transition-colors outline-none placeholder:text-ink-faint focus-visible:border-ink disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-status-cr"
+    class="h-11 w-full min-w-0 rounded-xl border border-paper-border bg-surface px-3.5 text-base text-ink transition-colors outline-none placeholder:text-ink-faint focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-status-cr lg:text-sm"
   />
 </template>

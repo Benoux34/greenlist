@@ -1,104 +1,101 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { CATEGORIES } from "@/features/species/categories";
-import { observationPhotoUrl } from "../api";
-import type { Observation } from "../entities";
+import { firstPhotoUrl, formatObservedAt, speciesName } from "../format";
+import type { Observation } from "../types";
+import PhotoPlaceholder from "./PhotoPlaceholder.vue";
 
-const { observation } = defineProps<{ observation: Observation }>();
+const { observation } = defineProps<{
+  observation: Observation;
+  selected: boolean;
+}>();
 
-const category = computed(() => CATEGORIES[observation.species.category]);
+const emit = defineEmits<{
+  select: [];
+  highlight: [on: boolean];
+  edit: [];
+  remove: [];
+}>();
 
-const date = computed(() =>
-  new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(observation.observedAt)),
+const label = computed(
+  () => `${speciesName(observation)} (${formatObservedAt(observation)})`,
 );
 
-const counted = computed(() => {
-  const { count } = observation;
-  if (count === null) return null;
-
-  return `${count} ${category.value.unit[count > 1 ? 1 : 0]}`;
-});
-
-const photo = computed(() => {
-  const [first] = observation.photos;
-
-  return first === undefined
-    ? null
-    : observationPhotoUrl(observation.id, first);
-});
+const ICON =
+  "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none";
 </script>
 
 <template>
-  <article class="flex h-full flex-col border border-paper-border">
-    <img
-      v-if="photo"
-      :src="photo"
-      alt=""
-      loading="lazy"
-      class="aspect-3/2 w-full border-b border-paper-border bg-paper-muted object-cover"
-    />
-    <div
-      v-else
-      class="flex aspect-3/2 w-full items-center justify-center border-b border-paper-border bg-paper-muted text-paper-border-strong"
-      aria-hidden="true"
+  <div
+    class="flex items-center gap-0.5 rounded-2xl pr-1.5 transition-colors"
+    :class="selected ? 'bg-accent-soft' : 'hover:bg-paper-muted'"
+    @mouseenter="emit('highlight', true)"
+    @mouseleave="emit('highlight', false)"
+  >
+    <button
+      type="button"
+      class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-2xl p-2 text-left focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:outline-none"
+      @click="emit('select')"
+      @focus="emit('highlight', true)"
+      @blur="emit('highlight', false)"
+    >
+      <img
+        v-if="firstPhotoUrl(observation)"
+        :src="firstPhotoUrl(observation) ?? undefined"
+        alt=""
+        loading="lazy"
+        class="size-12 shrink-0 rounded-xl bg-paper-muted object-cover"
+      />
+      <PhotoPlaceholder v-else class="size-12 shrink-0 rounded-xl" />
+
+      <span class="min-w-0 flex-1">
+        <span class="block truncate text-sm font-medium">
+          {{ speciesName(observation) }}
+        </span>
+        <span class="block text-xs text-ink-muted">
+          {{ formatObservedAt(observation) }}
+        </span>
+      </span>
+    </button>
+
+    <button
+      type="button"
+      :class="[ICON, 'hover:text-ink']"
+      :aria-label="`Modifier ${label}`"
+      @click="emit('edit')"
     >
       <svg
         viewBox="0 0 24 24"
-        class="size-8"
+        class="size-4"
         fill="none"
         stroke="currentColor"
-        stroke-width="1.5"
+        stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
+        aria-hidden="true"
       >
-        <rect x="3" y="5" width="18" height="14" />
-        <circle cx="8.5" cy="10" r="1.5" />
-        <path d="M21 16l-5-5-8 8" />
+        <path d="M4 20h4L19 9l-4-4L4 16z" />
+        <path d="m13.5 6.5 4 4" />
       </svg>
-    </div>
+    </button>
 
-    <div class="flex flex-1 flex-col p-5 sm:p-6">
-      <div class="mb-3 flex items-center justify-between gap-3 text-xs">
-        <span class="inline-flex items-center gap-1.5 font-medium text-ink-muted">
-          <span
-            class="h-1.5 w-1.5 rounded-full"
-            :class="category.dot"
-            aria-hidden="true"
-          ></span>
-          {{ category.label }}
-        </span>
-
-        <time :datetime="observation.observedAt" class="text-ink-faint">
-          {{ date }}
-        </time>
-      </div>
-
-      <h2 class="font-serif text-lg font-medium tracking-tight">
-        {{
-          observation.species.vernacularName ?? observation.species.scientificName
-        }}
-      </h2>
-      <p
-        v-if="observation.species.vernacularName"
-        class="font-serif text-sm text-ink-muted italic"
+    <button
+      type="button"
+      :class="[ICON, 'hover:text-status-cr']"
+      :aria-label="`Supprimer ${label}`"
+      @click="emit('remove')"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        class="size-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
       >
-        {{ observation.species.scientificName }}
-      </p>
-
-      <p
-        v-if="observation.notes"
-        class="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-muted"
-      >
-        {{ observation.notes }}
-      </p>
-
-      <p v-if="counted" class="mt-auto pt-4 text-xs text-ink-faint">
-        {{ counted }}
-      </p>
-    </div>
-  </article>
+        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+      </svg>
+    </button>
+  </div>
 </template>

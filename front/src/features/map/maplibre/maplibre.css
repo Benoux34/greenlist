@@ -1,0 +1,38 @@
+.maplibregl-map {
+  font-family: inherit;
+}
+
+.maplibregl-ctrl-group:not(:empty) {
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
+}
+
+.maplibregl-ctrl-group button {
+  width: 40px;
+  height: 40px;
+}
+
+.maplibregl-ctrl-bottom-right {
+  bottom: env(safe-area-inset-bottom);
+}
+
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl-group {
+  margin: 0 24px 24px 0;
+}
+
+@media (width >= 64rem) {
+  .map-beside-form .maplibregl-ctrl-bottom-right {
+    right: 25.5rem;
+  }
+}
+
+@media (width < 64rem) {
+  .maplibregl-ctrl-group {
+    display: none;
+  }
+
+  .maplibregl-ctrl-bottom-right {
+    bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 4.5rem);
+  }
+}

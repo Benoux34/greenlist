@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace App\Place\Geocoder;
 
-use App\Place\Dto\PlaceSuggestion;
-
 interface GeocoderInterface
 {
     /**
-     * Addresses and places matching the text, best match first.
-     *
-     * @return list<PlaceSuggestion>
+     * The town or place closest to a point, or null when it cannot be told.
      */
-    public function search(string $text): array;
+    public function placeName(float $latitude, float $longitude): ?string;
 }

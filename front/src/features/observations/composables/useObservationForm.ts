@@ -1,40 +1,49 @@
-import { nextTick, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { nextTick, reactive, ref, shallowRef, watch } from "vue";
 import { ApiError } from "@/shared/api/http";
-import { useGeolocation } from "@/shared/composables/useGeolocation";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
-import type { SpeciesSuggestion } from "@/features/species/entities";
-import type { Coordinates } from "@/features/map/entities";
-import { addObservationPhoto, createObservation } from "../api";
-import type { Observation } from "../entities";
+import type { Coordinates } from "@/features/map/types";
+import type { SpeciesSuggestion } from "@/features/species/types";
+import {
+  addObservationPhoto,
+  createObservation,
+  removeObservationPhoto,
+  updateObservation,
+} from "../api";
+import type { Observation } from "../types";
 import { observationSchema } from "../schemas";
 
-function localNow(): string {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+function localDateTime(date: Date): string {
+  const local = new Date(date);
+  local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
 
-  return now.toISOString().slice(0, 16);
+  return local.toISOString().slice(0, 16);
 }
 
-function useObservationForm() {
-  const router = useRouter();
-  const { isLocating, error: locationError, locate } = useGeolocation();
+const toSuggestion = ({ species }: Observation): SpeciesSuggestion => ({
+  ...species,
+  photoUrl: null,
+});
 
-  const latestMoment = localNow();
+function useObservationForm(
+  position: () => Coordinates,
+  editing: Observation | null,
+) {
+  const latestMoment = localDateTime(new Date());
 
   const form = reactive({
-    species: null as SpeciesSuggestion | null,
-    observedAt: latestMoment,
-    position: null as Coordinates | null,
+    species: editing && toSuggestion(editing),
+    observedAt: editing
+      ? localDateTime(new Date(editing.observedAt))
+      : latestMoment,
     photos: [] as Blob[],
-    count: "",
-    notes: "",
+    kept: editing ? [...editing.photos] : [],
+    count: editing?.count?.toString() ?? "",
+    notes: editing?.notes ?? "",
   });
   const errors = ref<FieldErrors<typeof form>>({});
   const formError = ref<string | null>(null);
   const isSubmitting = ref(false);
-
-  let created: Observation | null = null;
+  const saved = shallowRef(editing);
 
   for (const field of Object.keys(form) as (keyof typeof form)[])
     watch(
@@ -44,17 +53,7 @@ function useObservationForm() {
       },
     );
 
-  async function useMyPosition(): Promise<void> {
-    const coordinates = await locate();
-    if (coordinates === null) return;
-
-    form.position = {
-      latitude: coordinates.latitude,
-      longitude: coordinates.longitude,
-    };
-  }
-
-  async function submit(): Promise<void> {
+  async function submit(): Promise<Observation | null> {
     formError.value = null;
     const parsed = observationSchema.safeParse(form);
     errors.value = parsed.success ? {} : fieldErrors(parsed.error);
@@ -64,49 +63,63 @@ function useObservationForm() {
       document
         .querySelector('[aria-invalid="true"]')
         ?.scrollIntoView({ block: "center", behavior: "smooth" });
-      return;
+      return null;
     }
 
+    const input = {
+      inatId: parsed.data.species.inatId,
+      observedAt: parsed.data.observedAt.toISOString(),
+      latitude: position().latitude,
+      longitude: position().longitude,
+      count: parsed.data.count,
+      notes: parsed.data.notes === "" ? null : parsed.data.notes,
+    };
+
     isSubmitting.value = true;
+    let current = saved.value;
     try {
-      created ??= await createObservation({
-        inatId: parsed.data.species.inatId,
-        observedAt: parsed.data.observedAt.toISOString(),
-        latitude: parsed.data.position.latitude,
-        longitude: parsed.data.position.longitude,
-        count: parsed.data.count,
-        notes: parsed.data.notes === "" ? null : parsed.data.notes,
-      });
-
-      for (const photo of [...form.photos]) {
-        await addObservationPhoto(created.id, photo);
-        form.photos = form.photos.filter((other) => other !== photo);
-      }
-
-      await router.push({ name: "observations" });
+      current =
+        current === null
+          ? await createObservation(input)
+          : await updateObservation(current.id, input);
+      saved.value = current;
     } catch (error) {
       formError.value =
-        created !== null
-          ? "L'observation est enregistrée, mais une photo n'a pas pu être envoyée. Réessayez."
-          : error instanceof ApiError && error.status === 503
-            ? "Le service d'identification des espèces ne répond pas. Réessayez dans un instant."
-            : "L'observation n'a pas pu être enregistrée. Réessayez.";
+        error instanceof ApiError && error.status === 503
+          ? "Le service d'identification des espèces ne répond pas. Réessayez dans un instant."
+          : "L'observation n'a pas pu être enregistrée. Réessayez.";
+      isSubmitting.value = false;
+      return null;
+    }
+
+    try {
+      for (const name of current.photos.filter((name) => !form.kept.includes(name))) {
+        current = await removeObservationPhoto(current.id, name);
+        saved.value = current;
+      }
+
+      for (const photo of [...form.photos]) {
+        const before = current.photos;
+        current = await addObservationPhoto(current.id, photo);
+        saved.value = current;
+        form.photos = form.photos.filter((other) => other !== photo);
+        form.kept = [
+          ...form.kept,
+          ...current.photos.filter((name) => !before.includes(name)),
+        ];
+      }
+
+      return current;
+    } catch {
+      formError.value =
+        "L'observation est enregistrée, mais les photos n'ont pas toutes pu être mises à jour. Réessayez.";
+      return null;
     } finally {
       isSubmitting.value = false;
     }
   }
 
-  return {
-    form,
-    errors,
-    formError,
-    isSubmitting,
-    isLocating,
-    locationError,
-    latestMoment,
-    useMyPosition,
-    submit,
-  };
+  return { form, errors, formError, isSubmitting, latestMoment, saved, submit };
 }
 
 export { useObservationForm };

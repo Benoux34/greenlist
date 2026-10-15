@@ -1,12 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AuthLayout from "@/features/auth/components/AuthLayout.vue";
 import { useAuthStore } from "@/features/auth/store";
-import LoginView from "@/features/auth/views/LoginView.vue";
-import RegisterView from "@/features/auth/views/RegisterView.vue";
-import HomeView from "@/features/home/views/HomeView.vue";
-import ObservationListView from "@/features/observations/views/ObservationListView.vue";
-import ObservationFormView from "@/features/observations/views/ObservationFormView.vue";
-import AppLayout from "./AppLayout.vue";
+import HomeView from "@/views/HomeView.vue";
+import LoginView from "@/views/LoginView.vue";
+import RegisterView from "@/views/RegisterView.vue";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -19,33 +15,17 @@ const router = createRouter({
   routes: [
     {
       path: "/login",
-      component: AuthLayout,
+      name: "login",
+      component: LoginView,
       meta: { public: true },
-      children: [{ path: "", name: "login", component: LoginView }],
     },
     {
       path: "/register",
-      component: AuthLayout,
+      name: "register",
+      component: RegisterView,
       meta: { public: true },
-      children: [{ path: "", name: "register", component: RegisterView }],
     },
-    {
-      path: "/",
-      component: AppLayout,
-      children: [
-        { path: "", name: "home", component: HomeView },
-        {
-          path: "observations",
-          name: "observations",
-          component: ObservationListView,
-        },
-        {
-          path: "observations/new",
-          name: "observation-new",
-          component: ObservationFormView,
-        },
-      ],
-    },
+    { path: "/", name: "home", component: HomeView },
     { path: "/:pathMatch(.*)*", redirect: { name: "home" } },
   ],
 });

@@ -11,12 +11,17 @@ framework:
                 base_uri: "https://api.inaturalist.org/v1/"
                 timeout: 5
                 headers:
-                    User-Agent: "Greenlist (https://nature.redlist.dedyn.io)"
+                    User-Agent: "Greenlist (%env(APP_URL)%)"
             photon.client:
                 base_uri: "https://photon.komoot.io/"
                 timeout: 5
                 headers:
-                    User-Agent: "Greenlist (https://nature.redlist.dedyn.io)"
+                    User-Agent: "Greenlist (%env(APP_URL)%)"
+            wikipedia.client:
+                base_uri: "https://fr.wikipedia.org/api/rest_v1/"
+                timeout: 5
+                headers:
+                    User-Agent: "Greenlist (%env(APP_URL)%)"
 
     #esi: true
     #fragments: true
