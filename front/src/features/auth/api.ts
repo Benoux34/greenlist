@@ -11,4 +11,21 @@ const register = (input: RegisterInput) =>
 
 const logout = () => http.post<void>("/auth/logout");
 
-export { fetchMe, login, register, logout };
+const requestPasswordReset = (email: string) =>
+  http.post<void>("/auth/password/forgot", { email });
+
+const checkResetCode = (email: string, code: string) =>
+  http.post<void>("/auth/password/check", { email, code });
+
+const resetPassword = (email: string, code: string, password: string) =>
+  http.post<void>("/auth/password/reset", { email, code, password });
+
+export {
+  fetchMe,
+  login,
+  register,
+  logout,
+  requestPasswordReset,
+  checkResetCode,
+  resetPassword,
+};

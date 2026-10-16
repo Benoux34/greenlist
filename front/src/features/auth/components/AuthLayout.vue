@@ -99,7 +99,7 @@ const SAMPLES = [
     <footer
       class="px-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-center text-xs text-ink-faint"
     >
-      © {{ year }} Greenlist · Carnet d'observation de la nature
+      © {{ year }} Fauneflore · Carnet d'observation de la nature
     </footer>
   </div>
 </template>

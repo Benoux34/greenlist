@@ -22,11 +22,9 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180, unique: true)]
     private string $email;
 
+    // Accounts created through the former Redlist sign-in have no password.
     #[ORM\Column(nullable: true)]
     private ?string $password;
-
-    #[ORM\Column(type: UuidType::NAME, unique: true, nullable: true)]
-    private ?Uuid $redlistId = null;
 
     #[ORM\Column(length: 100)]
     private string $firstName;
@@ -34,21 +32,13 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private readonly \DateTimeImmutable $createdAt;
 
-    public function __construct(string $email, string $firstName, ?string $hashedPassword)
+    public function __construct(string $email, string $firstName, string $hashedPassword)
     {
         $this->id = Uuid::v7();
         $this->email = $email;
         $this->firstName = $firstName;
         $this->password = $hashedPassword;
         $this->createdAt = new \DateTimeImmutable();
-    }
-
-    public static function fromRedlist(Uuid $redlistId, string $email, string $firstName): self
-    {
-        $user = new self($email, $firstName, null);
-        $user->redlistId = $redlistId;
-
-        return $user;
     }
 
     public function getId(): Uuid
@@ -84,6 +74,11 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         return ['ROLE_USER'];
+    }
+
+    public function changePassword(string $hashedPassword): void
+    {
+        $this->password = $hashedPassword;
     }
 
     #[\Deprecated]

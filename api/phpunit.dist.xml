@@ -16,6 +16,15 @@
         <server name="APP_ENV" value="test" force="true" />
         <server name="KERNEL_CLASS" value="App\Kernel" />
         <server name="SHELL_VERBOSITY" value="-1" />
+
+        <!-- ###+ symfony/mailer ### -->
+        <env name="MAILER_DSN" value="null://null" force="true"/>
+        <!-- ###- symfony/mailer ### -->
+
+        <!-- ###+ symfony/sweego-mailer ### -->
+        <!-- MAILER_DSN=sweego+api://API_KEY@default -->
+        <!-- MAILER_DSN=sweego+smtp://LOGIN:PASSWORD@HOST:PORT -->
+        <!-- ###- symfony/sweego-mailer ### -->
     </php>
 
     <testsuites>

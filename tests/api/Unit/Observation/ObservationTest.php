@@ -77,7 +77,7 @@ final class ObservationTest extends TestCase
         ?string $notes = null,
     ): Observation {
         return new Observation(
-            new User('ana@example.fr', 'Ana', null),
+            new User('ana@example.fr', 'Ana', 'hash'),
             new Species(42069, 'Vulpes vulpes', 'Renard roux', 'Animalia'),
             $observedAt ?? new \DateTimeImmutable('2026-06-01T08:00:00Z'),
             46.2,

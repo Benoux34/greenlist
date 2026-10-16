@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { RouterLink, useRoute, useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { ApiError } from "@/shared/api/http";
 import BaseButton from "@/shared/components/BaseButton.vue";
 import BaseInput from "@/shared/components/BaseInput.vue";
 import FormField from "@/shared/components/FormField.vue";
+import PasswordInput from "@/shared/components/PasswordInput.vue";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
 import { useAuthStore } from "../store";
-import RedlistButton from "./RedlistButton.vue";
 import { loginSchema } from "../schemas";
 
 const auth = useAuthStore();
@@ -15,17 +15,7 @@ const router = useRouter();
 
 const form = reactive({ email: "", password: "" });
 const errors = ref<FieldErrors<typeof form>>({});
-// Set by the API when a sign-in through Redlist comes back without a session.
-const REDLIST_ERRORS: Record<string, string> = {
-  email_taken:
-    "Un compte existe déjà avec cette adresse. Connectez-vous avec votre mot de passe.",
-  redlist: "La connexion via Redlist n'a pas abouti. Réessayez.",
-};
-
-const route = useRoute();
-const formError = ref<string | null>(
-  REDLIST_ERRORS[String(route.query.error)] ?? null,
-);
+const formError = ref<string | null>(null);
 const submitting = ref(false);
 
 async function submit(): Promise<void> {
@@ -68,15 +58,20 @@ async function submit(): Promise<void> {
     </FormField>
 
     <FormField id="login-password" label="Mot de passe" :error="errors.password">
-      <BaseInput
+      <PasswordInput
         id="login-password"
         v-model="form.password"
-        type="password"
         placeholder="••••••••••••"
         autocomplete="current-password"
         :aria-invalid="!!errors.password"
       />
     </FormField>
+
+    <div class="-mt-2 flex justify-end">
+      <RouterLink :to="{ name: 'forgot-password' }" class="text-sm font-medium text-accent underline-offset-4 hover:underline">
+        Mot de passe oublié ?
+      </RouterLink>
+    </div>
 
     <p v-if="formError" role="alert" class="rounded-2xl bg-status-cr/10 px-4 py-3 text-sm text-status-cr">
       {{ formError }}
@@ -86,8 +81,6 @@ async function submit(): Promise<void> {
       {{ submitting ? "Connexion…" : "Se connecter" }}
     </BaseButton>
   </form>
-
-  <RedlistButton />
 
   <p class="mt-6 text-center text-sm text-ink-muted">
     Pas encore de compte ?

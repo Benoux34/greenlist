@@ -26,7 +26,7 @@ export default defineConfig({
       command: "php -d variables_order=EGPCS -S 127.0.0.1:8010 -t public -q",
       cwd: "../../api",
       url: `${API}/api/me`,
-      env: { APP_ENV: "test", PHP_CLI_SERVER_WORKERS: "4" },
+      env: { APP_ENV: "test", MAILER_DSN: "null://null", PHP_CLI_SERVER_WORKERS: "4" },
       reuseExistingServer: !process.env.CI,
     },
     {

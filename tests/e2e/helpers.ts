@@ -36,7 +36,7 @@ async function signUp(page: Page): Promise<string> {
   await page.goto("/register");
   await page.getByLabel("Prénom").fill("Camille");
   await page.getByLabel("Adresse électronique").fill(email);
-  await page.getByLabel("Mot de passe").fill(PASSWORD);
+  await page.getByLabel("Mot de passe", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Créer mon compte" }).click();
   await waitForMap(page);
 

@@ -33,8 +33,7 @@ jobs:
       JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
       JWT_PASSPHRASE: ci
       APP_URL: http://localhost
-      REDLIST_URL: http://localhost
-      REDLIST_CLIENT_ID: ""
+      MAILER_DSN: null://null
 
     steps:
       - uses: actions/checkout@v5
@@ -108,8 +107,7 @@ jobs:
       JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
       JWT_PASSPHRASE: ci
       APP_URL: http://localhost
-      REDLIST_URL: http://localhost
-      REDLIST_CLIENT_ID: ""
+      MAILER_DSN: null://null
 
     steps:
       - uses: actions/checkout@v5
@@ -184,8 +182,7 @@ jobs:
       JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
       JWT_PASSPHRASE: ci
       APP_URL: http://localhost
-      REDLIST_URL: http://localhost
-      REDLIST_CLIENT_ID: ""
+      MAILER_DSN: null://null
 
     steps:
       - uses: actions/checkout@v5

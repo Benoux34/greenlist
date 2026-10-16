@@ -5,9 +5,9 @@ import { ApiError } from "@/shared/api/http";
 import BaseButton from "@/shared/components/BaseButton.vue";
 import BaseInput from "@/shared/components/BaseInput.vue";
 import FormField from "@/shared/components/FormField.vue";
+import PasswordInput from "@/shared/components/PasswordInput.vue";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
 import { useAuthStore } from "../store";
-import RedlistButton from "./RedlistButton.vue";
 import { registerSchema } from "../schemas";
 
 const auth = useAuthStore();
@@ -71,10 +71,9 @@ async function submit(): Promise<void> {
     </FormField>
 
     <FormField id="register-password" label="Mot de passe" :error="errors.password">
-      <BaseInput
+      <PasswordInput
         id="register-password"
         v-model="form.password"
-        type="password"
         placeholder="Au moins 8 caractères"
         autocomplete="new-password"
         :aria-invalid="!!errors.password"
@@ -89,8 +88,6 @@ async function submit(): Promise<void> {
       {{ submitting ? "Création…" : "Créer mon compte" }}
     </BaseButton>
   </form>
-
-  <RedlistButton />
 
   <p class="mt-6 text-center text-sm text-ink-muted">
     Déjà un compte ?

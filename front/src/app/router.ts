@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/features/auth/store";
-import HomeView from "@/views/HomeView.vue";
-import LoginView from "@/views/LoginView.vue";
-import RegisterView from "@/views/RegisterView.vue";
+import HomeView from "@/views/authenticated/HomeView.vue";
+import ForgotPasswordView from "@/views/unauthenticated/ForgotPasswordView.vue";
+import LoginView from "@/views/unauthenticated/LoginView.vue";
+import RegisterView from "@/views/unauthenticated/RegisterView.vue";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -23,6 +24,12 @@ const router = createRouter({
       path: "/register",
       name: "register",
       component: RegisterView,
+      meta: { public: true },
+    },
+    {
+      path: "/forgot-password",
+      name: "forgot-password",
+      component: ForgotPasswordView,
       meta: { public: true },
     },
     { path: "/", name: "home", component: HomeView },

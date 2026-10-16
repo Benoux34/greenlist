@@ -25,7 +25,7 @@ import { RouterLink } from "vue-router";
       </svg>
     </span>
     <span class="font-serif text-lg font-semibold tracking-tight text-ink">
-      Greenlist
+      Fauneflore
     </span>
   </RouterLink>
 </template>

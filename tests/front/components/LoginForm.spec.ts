@@ -16,6 +16,7 @@ async function mountAt(path: string): Promise<{ wrapper: ReturnType<typeof mount
       { path: "/", name: "home", component: page },
       { path: "/login", name: "login", component: page },
       { path: "/register", name: "register", component: page },
+      { path: "/forgot-password", name: "forgot-password", component: page },
     ],
   });
   await router.push(path);
@@ -64,9 +65,10 @@ describe("LoginForm", () => {
     expect(wrapper.get('[role="alert"]').text()).toBe("Adresse électronique ou mot de passe incorrect.");
   });
 
-  it("explains a failed sign-in through Redlist", async () => {
-    const { wrapper } = await mountAt("/login?error=email_taken");
+  it("links to the forgotten password page", async () => {
+    const { wrapper } = await mountAt("/login");
 
-    expect(wrapper.get('[role="alert"]').text()).toContain("Un compte existe déjà avec cette adresse.");
+    const link = wrapper.findAll("a").find((anchor) => anchor.text() === "Mot de passe oublié ?");
+    expect(link?.attributes("href")).toBe("/forgot-password");
   });
 });
