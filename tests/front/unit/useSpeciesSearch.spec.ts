@@ -1,21 +1,23 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope, nextTick, ref } from "vue";
+import type { Coordinates } from "@/features/map/types";
 import { searchSpecies } from "@/features/species/api";
 import { useSpeciesSearch } from "@/features/species/composables/useSpeciesSearch";
 import type { SpeciesCategory } from "@/features/species/types";
 
 vi.mock("@/features/species/api", () => ({ searchSpecies: vi.fn() }));
 
-const fox = { inatId: 42069, scientificName: "Vulpes vulpes", vernacularName: "Renard roux", category: "fauna" as const, photoUrl: null };
+const fox = { inatId: 42069, scientificName: "Vulpes vulpes", vernacularName: "Renard roux", category: "fauna" as const, photoUrl: null, nearby: false };
 
 function setup() {
   const text = ref("");
   const category = ref<SpeciesCategory | null>(null);
+  const near = ref<Coordinates | null>(null);
   const scope = effectScope();
-  const search = scope.run(() => useSpeciesSearch(text, category))!;
+  const search = scope.run(() => useSpeciesSearch(text, category, () => near.value))!;
 
-  return { text, category, scope, ...search };
+  return { text, category, near, scope, ...search };
 }
 
 describe("useSpeciesSearch", () => {
@@ -44,7 +46,7 @@ describe("useSpeciesSearch", () => {
     vi.advanceTimersByTime(1);
     await flushPromises();
 
-    expect(searchSpecies).toHaveBeenCalledWith("re", null, expect.any(AbortSignal));
+    expect(searchSpecies).toHaveBeenCalledWith("re", null, null, expect.any(AbortSignal));
     expect(suggestions.value).toEqual([fox]);
     expect(isSearching.value).toBe(false);
   });
@@ -56,12 +58,30 @@ describe("useSpeciesSearch", () => {
     text.value = "ren";
     await nextTick();
     vi.advanceTimersByTime(300);
-    const signal = vi.mocked(searchSpecies).mock.calls[0]![2];
+    const signal = vi.mocked(searchSpecies).mock.calls[0]![3];
 
     category.value = "fauna";
     await nextTick();
 
     expect(signal.aborted).toBe(true);
+  });
+
+  it("searches again around the new point when the pin moves", async () => {
+    const { text, near } = setup();
+    near.value = { latitude: 39.6, longitude: -9.07 };
+    text.value = "dauphin";
+    await nextTick();
+    vi.advanceTimersByTime(300);
+    await flushPromises();
+    expect(searchSpecies).toHaveBeenLastCalledWith("dauphin", null, { latitude: 39.6, longitude: -9.07 }, expect.any(AbortSignal));
+
+    near.value = { latitude: 43.3, longitude: 5.37 };
+    await nextTick();
+    vi.advanceTimersByTime(300);
+    await flushPromises();
+
+    expect(searchSpecies).toHaveBeenCalledTimes(2);
+    expect(searchSpecies).toHaveBeenLastCalledWith("dauphin", null, { latitude: 43.3, longitude: 5.37 }, expect.any(AbortSignal));
   });
 
   it("flags an unavailable service", async () => {

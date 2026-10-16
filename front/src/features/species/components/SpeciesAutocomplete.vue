@@ -3,18 +3,24 @@ import { computed, nextTick, ref, useId, useTemplateRef, watch } from "vue";
 import BaseInput from "@/shared/components/BaseInput.vue";
 import { CATEGORIES } from "../categories";
 import { useSpeciesSearch } from "../composables/useSpeciesSearch";
+import type { Coordinates } from "@/features/map/types";
 import type { SpeciesCategory, SpeciesSuggestion } from "../types";
 import CategoryPills from "./CategoryPills.vue";
 
 const selected = defineModel<SpeciesSuggestion | null>({ required: true });
 
-defineProps<{ id: string; invalid?: boolean }>();
+const { near = null } = defineProps<{
+  id: string;
+  invalid?: boolean;
+  near?: Coordinates | null;
+}>();
 
 const text = ref("");
 const category = ref<SpeciesCategory | null>(null);
 const { suggestions, isSearching, hasFailed, minLength } = useSpeciesSearch(
   text,
   category,
+  () => near,
 );
 
 const isOpen = ref(false);
@@ -181,6 +187,12 @@ function confirm(): void {
               </span>
             </span>
 
+            <span
+              v-if="suggestion.nearby"
+              class="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent"
+            >
+              Près d'ici
+            </span>
             <span
               class="size-2 shrink-0 rounded-full"
               :class="CATEGORIES[suggestion.category].dot"

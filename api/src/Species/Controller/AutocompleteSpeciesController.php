@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Species\Controller;
 
 use App\Species\Dto\SpeciesSearch;
-use App\Species\Dto\SpeciesSuggestion;
-use App\Species\Inaturalist\InaturalistClientInterface;
+use App\Species\Service\SuggestSpecies;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,10 +18,8 @@ final class AutocompleteSpeciesController extends AbstractController
     public function __invoke(
         #[MapQueryString(validationFailedStatusCode: Response::HTTP_UNPROCESSABLE_ENTITY)]
         SpeciesSearch $search,
-        InaturalistClientInterface $inaturalist,
+        SuggestSpecies $suggestSpecies,
     ): JsonResponse {
-        $taxa = $inaturalist->autocomplete(trim($search->q), $search->category);
-
-        return $this->json(array_map(SpeciesSuggestion::fromTaxon(...), $taxa));
+        return $this->json($suggestSpecies($search));
     }
 }

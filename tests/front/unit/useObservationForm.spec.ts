@@ -18,7 +18,7 @@ vi.mock("@/features/observations/api", () => ({
 }));
 
 const here = { latitude: 45.76, longitude: 4.83 };
-const fox = { inatId: 42069, scientificName: "Vulpes vulpes", vernacularName: "Renard roux", category: "fauna" as const, photoUrl: null };
+const fox = { inatId: 42069, scientificName: "Vulpes vulpes", vernacularName: "Renard roux", category: "fauna" as const, photoUrl: null, nearby: false };
 
 describe("useObservationForm", () => {
   beforeEach(() => {
@@ -113,7 +113,7 @@ describe("useObservationForm", () => {
 
     const { form, saved } = useObservationForm(() => here, edited);
 
-    expect(form.species).toEqual({ ...edited.species, photoUrl: null });
+    expect(form.species).toEqual({ ...edited.species, photoUrl: null, nearby: false });
     expect(form.count).toBe("3");
     expect(form.notes).toBe("Au bord du lac");
     expect(form.kept).toEqual(["a.jpg", "b.jpg"]);

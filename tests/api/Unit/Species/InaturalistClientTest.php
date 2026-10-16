@@ -51,7 +51,7 @@ final class InaturalistClientTest extends TestCase
         self::assertIsString($url);
         self::assertStringStartsWith('https://api.inaturalist.org/v1/taxa/autocomplete?', $url);
         parse_str((string) parse_url($url, \PHP_URL_QUERY), $query);
-        self::assertSame(['q' => 'chene', 'locale' => 'fr', 'rank' => 'species', 'per_page' => '8', 'taxon_id' => '47126'], $query);
+        self::assertSame(['q' => 'chene', 'locale' => 'fr', 'rank' => 'species', 'per_page' => '30', 'taxon_id' => '47126'], $query);
     }
 
     public function testAutocompleteIsCached(): void
@@ -95,6 +95,43 @@ final class InaturalistClientTest extends TestCase
         $http = new MockHttpClient([$this->results([])], 'https://api.inaturalist.org/v1/');
 
         self::assertNull(new InaturalistClient($http, new ArrayAdapter())->find(1));
+    }
+
+    public function testObservedNearCountsTheSightingsAroundAPoint(): void
+    {
+        $url = null;
+        $http = new MockHttpClient(function (string $method, string $requested) use (&$url): MockResponse {
+            $url = $requested;
+
+            return $this->results([['count' => 60, 'taxon' => ['id' => 41526]], ['count' => 3, 'taxon' => ['id' => 41494]]]);
+        }, 'https://api.inaturalist.org/v1/');
+
+        $counts = new InaturalistClient($http, new ArrayAdapter())->observedNear([41526, 41494, 41472], 39.6, -9.07);
+
+        self::assertSame([41526 => 60, 41494 => 3], $counts);
+        self::assertIsString($url);
+        self::assertStringStartsWith('https://api.inaturalist.org/v1/observations/species_counts?', $url);
+        parse_str((string) parse_url($url, \PHP_URL_QUERY), $query);
+        self::assertSame(['lat' => '39.6', 'lng' => '-9.07', 'radius' => '50', 'verifiable' => 'true', 'taxon_id' => '41526,41494,41472', 'per_page' => '3'], $query);
+    }
+
+    public function testObservedNearIsCachedAroundTheSamePlace(): void
+    {
+        $http = new MockHttpClient([$this->results([])], 'https://api.inaturalist.org/v1/');
+        $client = new InaturalistClient($http, new ArrayAdapter());
+
+        $client->observedNear([41526], 39.6011, -9.0701);
+        $client->observedNear([41526], 39.6049, -9.0749);
+
+        self::assertSame(1, $http->getRequestsCount());
+    }
+
+    public function testObservedNearWithoutTaxaAsksNothing(): void
+    {
+        $http = new MockHttpClient([], 'https://api.inaturalist.org/v1/');
+
+        self::assertSame([], new InaturalistClient($http, new ArrayAdapter())->observedNear([], 39.6, -9.07));
+        self::assertSame(0, $http->getRequestsCount());
     }
 
     public function testAnUnreachableServiceIsReported(): void

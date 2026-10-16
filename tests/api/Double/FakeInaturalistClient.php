@@ -34,6 +34,14 @@ final class FakeInaturalistClient implements InaturalistClientInterface
         return null;
     }
 
+    public function observedNear(array $taxonIds, float $latitude, float $longitude): array
+    {
+        // Above the Arctic circle only the Arctic fox is seen; anywhere else only the red fox.
+        $seen = $latitude > 66.5 ? 42051 : 42069;
+
+        return \in_array($seen, $taxonIds, true) ? [$seen => 12] : [];
+    }
+
     private static function fold(string $text): string
     {
         return mb_strtolower((string) preg_replace('/\p{Mn}/u', '', (string) \Normalizer::normalize($text, \Normalizer::FORM_D)));
@@ -46,6 +54,7 @@ final class FakeInaturalistClient implements InaturalistClientInterface
     {
         return [
             new Taxon(42069, 'Vulpes vulpes', 'Renard roux', 'species', 'Animalia', 'Chordata', 'Mammalia', 'Carnivora', 'Canidae'),
+            new Taxon(42051, 'Vulpes lagopus', 'Renard polaire', 'species', 'Animalia', 'Chordata', 'Mammalia', 'Carnivora', 'Canidae'),
             new Taxon(56133, 'Quercus robur', 'Chêne pédonculé', 'species', 'Plantae', 'Tracheophyta', 'Magnoliopsida', 'Fagales', 'Fagaceae'),
             new Taxon(48715, 'Amanita muscaria', 'Amanite tue-mouches', 'species', 'Fungi', 'Basidiomycota', 'Agaricomycetes', 'Agaricales', 'Amanitaceae'),
             new Taxon(47126, 'Plantae', 'Plantes', 'kingdom', 'Plantae'),

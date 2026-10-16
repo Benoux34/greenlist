@@ -7,7 +7,8 @@ type SpeciesSummary = Readonly<{
   category: SpeciesCategory;
 }>;
 
-type SpeciesSuggestion = SpeciesSummary & Readonly<{ photoUrl: string | null }>;
+type SpeciesSuggestion = SpeciesSummary &
+  Readonly<{ photoUrl: string | null; nearby: boolean }>;
 
 type SpeciesDetail = SpeciesSummary &
   Readonly<{

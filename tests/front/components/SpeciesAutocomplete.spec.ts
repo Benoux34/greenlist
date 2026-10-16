@@ -6,13 +6,14 @@ import type { SpeciesSuggestion } from "@/features/species/types";
 
 vi.mock("@/features/species/api", () => ({ searchSpecies: vi.fn() }));
 
-const fox: SpeciesSuggestion = { inatId: 42069, scientificName: "Vulpes vulpes", vernacularName: "Renard roux", category: "fauna", photoUrl: null };
-const crab: SpeciesSuggestion = { inatId: 42087, scientificName: "Cerdocyon thous", vernacularName: "Renard crabier", category: "fauna", photoUrl: null };
+const fox: SpeciesSuggestion = { inatId: 42069, scientificName: "Vulpes vulpes", vernacularName: "Renard roux", category: "fauna", photoUrl: null, nearby: true };
+const crab: SpeciesSuggestion = { inatId: 42087, scientificName: "Cerdocyon thous", vernacularName: "Renard crabier", category: "fauna", photoUrl: null, nearby: false };
 
-function mountAutocomplete() {
+function mountAutocomplete(near: { latitude: number; longitude: number } | null = null) {
   const wrapper: VueWrapper = mount(SpeciesAutocomplete, {
     props: {
       id: "species",
+      near,
       modelValue: null as SpeciesSuggestion | null,
       "onUpdate:modelValue": (value: SpeciesSuggestion | null) => wrapper.setProps({ modelValue: value }),
     },
@@ -69,13 +70,24 @@ describe("SpeciesAutocomplete", () => {
     expect(wrapper.find("input").exists()).toBe(false);
   });
 
+  it("searches around the point and flags the species seen nearby", async () => {
+    const wrapper = mountAutocomplete({ latitude: 39.6, longitude: -9.07 });
+
+    await type(wrapper, "renard");
+
+    expect(searchSpecies).toHaveBeenLastCalledWith("renard", null, { latitude: 39.6, longitude: -9.07 }, expect.any(AbortSignal));
+    const [nearby, elsewhere] = wrapper.findAll('[role="option"]');
+    expect(nearby!.text()).toContain("Près d'ici");
+    expect(elsewhere!.text()).not.toContain("Près d'ici");
+  });
+
   it("narrows the search to a category", async () => {
     const wrapper = mountAutocomplete();
     await wrapper.findAll("button").find((button) => button.text() === "Flore")!.trigger("click");
 
     await type(wrapper, "chene");
 
-    expect(searchSpecies).toHaveBeenLastCalledWith("chene", "flora", expect.any(AbortSignal));
+    expect(searchSpecies).toHaveBeenLastCalledWith("chene", "flora", null, expect.any(AbortSignal));
   });
 
   it("lets me change the species", async () => {

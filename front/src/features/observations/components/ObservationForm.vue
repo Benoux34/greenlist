@@ -106,6 +106,7 @@ function close(): void {
           <SpeciesAutocomplete
             id="observation-species"
             v-model="form.species"
+            :near="position"
             :invalid="!!errors.species"
           />
         </FormField>

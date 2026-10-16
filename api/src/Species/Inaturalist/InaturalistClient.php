@@ -15,6 +15,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 final readonly class InaturalistClient implements InaturalistClientInterface
 {
     private const array KINGDOMS = [1 => 'Animalia', 47126 => 'Plantae', 47170 => 'Fungi'];
+    private const int NEARBY_RADIUS_KM = 50;
 
     public function __construct(
         #[Target('inaturalist.client')]
@@ -30,7 +31,7 @@ final readonly class InaturalistClient implements InaturalistClientInterface
         return $this->cache->get($key, function (ItemInterface $item) use ($query, $category): array {
             $item->expiresAfter(3600);
 
-            $parameters = ['q' => $query, 'locale' => 'fr', 'rank' => 'species', 'per_page' => 8];
+            $parameters = ['q' => $query, 'locale' => 'fr', 'rank' => 'species', 'per_page' => 30];
             foreach (self::KINGDOMS as $id => $kingdom) {
                 if (Category::fromKingdom($kingdom) === $category) {
                     $parameters['taxon_id'] = $id;
@@ -46,6 +47,33 @@ final readonly class InaturalistClient implements InaturalistClientInterface
         $results = $this->results('taxa/'.$inatId, ['locale' => 'fr']);
 
         return [] === $results ? null : $this->toTaxon($results[0]);
+    }
+
+    public function observedNear(array $taxonIds, float $latitude, float $longitude): array
+    {
+        if ([] === $taxonIds) {
+            return [];
+        }
+    
+        $key = \sprintf('inat_near_%.2f_%.2f_%s', $latitude, $longitude, md5(implode(',', $taxonIds)));
+    
+        return $this->cache->get($key, function (ItemInterface $item) use ($taxonIds, $latitude, $longitude): array {
+            $item->expiresAfter(86400);
+    
+            $rows = $this->results('observations/species_counts', [
+                'lat' => $latitude,
+                'lng' => $longitude,
+                'radius' => self::NEARBY_RADIUS_KM,
+                'verifiable' => 'true',
+                'taxon_id' => implode(',', $taxonIds),
+                'per_page' => \count($taxonIds),
+            ]);
+    
+            return array_column(array_map(
+                static fn (array $row): array => ['id' => $row['taxon']['id'], 'count' => $row['count']],
+                $rows,
+            ), 'count', 'id');
+        });
     }
 
     /**

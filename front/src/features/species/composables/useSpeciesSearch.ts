@@ -1,4 +1,5 @@
 import { onScopeDispose, ref, watch, type Ref } from "vue";
+import type { Coordinates } from "@/features/map/types";
 import { searchSpecies } from "../api";
 import type { SpeciesCategory, SpeciesSuggestion } from "../types";
 
@@ -8,6 +9,7 @@ const DELAY = 300;
 function useSpeciesSearch(
   text: Ref<string>,
   category: Ref<SpeciesCategory | null>,
+  near: () => Coordinates | null,
 ) {
   const suggestions = ref<SpeciesSuggestion[]>([]);
   const isSearching = ref(false);
@@ -21,7 +23,7 @@ function useSpeciesSearch(
     controller?.abort();
   }
 
-  watch([text, category], () => {
+  watch([text, category, near], () => {
     cancel();
     hasFailed.value = false;
 
@@ -42,6 +44,7 @@ function useSpeciesSearch(
         suggestions.value = await searchSpecies(
           wanted,
           category.value,
+          near(),
           current.signal,
         );
       } catch {

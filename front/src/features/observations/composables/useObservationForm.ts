@@ -22,6 +22,7 @@ function localDateTime(date: Date): string {
 const toSuggestion = ({ species }: Observation): SpeciesSuggestion => ({
   ...species,
   photoUrl: null,
+  nearby: false,
 });
 
 function useObservationForm(

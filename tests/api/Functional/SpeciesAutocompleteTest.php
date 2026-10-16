@@ -15,13 +15,38 @@ final class SpeciesAutocompleteTest extends ApiTestCase
         $suggestions = $this->json('GET', '/api/species/autocomplete?q=renard');
 
         $this->assertStatus(200);
-        self::assertSame([[
+        self::assertSame([
             'inatId' => 42069,
             'scientificName' => 'Vulpes vulpes',
             'vernacularName' => 'Renard roux',
             'category' => 'fauna',
             'photoUrl' => null,
-        ]], $suggestions);
+            'nearby' => false,
+        ], $suggestions[0]);
+        self::assertSame(['Renard roux', 'Renard polaire'], array_column($suggestions, 'vernacularName'));
+    }
+
+    public function testSpeciesSeenAroundThePointComeFirst(): void
+    {
+        $this->loginAs(UserFactory::createOne());
+
+        $svalbard = $this->json('GET', '/api/species/autocomplete?q=renard&latitude=78.22&longitude=15.65');
+        $this->assertStatus(200);
+        self::assertSame(['Renard polaire', 'Renard roux'], array_column($svalbard, 'vernacularName'));
+        self::assertSame([true, false], array_column($svalbard, 'nearby'));
+
+        $lyon = $this->json('GET', '/api/species/autocomplete?q=renard&latitude=45.76&longitude=4.83');
+        self::assertSame(['Renard roux', 'Renard polaire'], array_column($lyon, 'vernacularName'));
+        self::assertSame([true, false], array_column($lyon, 'nearby'));
+    }
+
+    public function testThePointMustBeOnEarth(): void
+    {
+        $this->loginAs(UserFactory::createOne());
+
+        $this->json('GET', '/api/species/autocomplete?q=renard&latitude=95&longitude=4.83');
+
+        $this->assertStatus(422);
     }
 
     public function testTheCategoryNarrowsTheSuggestions(): void

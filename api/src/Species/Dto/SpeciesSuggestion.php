@@ -15,10 +15,11 @@ final readonly class SpeciesSuggestion
         public ?string $vernacularName,
         public Category $category,
         public ?string $photoUrl,
+        public bool $nearby,
     ) {
     }
 
-    public static function fromTaxon(Taxon $taxon): self
+    public static function fromTaxon(Taxon $taxon, bool $nearby = false): self
     {
         return new self(
             $taxon->inatId,
@@ -26,6 +27,7 @@ final readonly class SpeciesSuggestion
             $taxon->vernacularName,
             Category::fromKingdom($taxon->kingdom),
             $taxon->photoUrl,
+            $nearby
         );
     }
 }
