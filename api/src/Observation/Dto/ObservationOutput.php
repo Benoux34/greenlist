@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Observation\Dto;
 
+use App\Observation\Entity\Visibility;
 use App\Observation\Entity\Observation;
 use App\Species\Dto\SpeciesSummary;
+use App\User\Dto\UserSummary;
 
 final readonly class ObservationOutput
 {
@@ -14,6 +16,7 @@ final readonly class ObservationOutput
      */
     public function __construct(
         public string $id,
+        public UserSummary $author,
         public SpeciesSummary $species,
         public \DateTimeImmutable $observedAt,
         public float $latitude,
@@ -21,6 +24,7 @@ final readonly class ObservationOutput
         public ?int $count,
         public ?string $notes,
         public array $photos,
+        public Visibility $visibility,
     ) {
     }
 
@@ -28,6 +32,7 @@ final readonly class ObservationOutput
     {
         return new self(
             (string) $observation->getId(),
+            UserSummary::fromEntity($observation->getAuthor()),
             SpeciesSummary::fromEntity($observation->getSpecies()),
             $observation->getObservedAt(),
             $observation->getLatitude(),
@@ -35,6 +40,7 @@ final readonly class ObservationOutput
             $observation->getCount(),
             $observation->getNotes(),
             $observation->getPhotos(),
+            $observation->getVisibility(),
         );
     }
 }

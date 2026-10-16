@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { ApiError } from "@/shared/api/http";
 import BaseButton from "@/shared/components/BaseButton.vue";
 import BaseInput from "@/shared/components/BaseInput.vue";
@@ -9,9 +9,11 @@ import PasswordInput from "@/shared/components/PasswordInput.vue";
 import { fieldErrors, type FieldErrors } from "@/shared/utils/fieldErrors";
 import { useAuthStore } from "../store";
 import { registerSchema } from "../schemas";
+import { afterSignIn } from "../redirect";
 
 const auth = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 const form = reactive({ firstName: "", email: "", password: "" });
 const errors = ref<FieldErrors<typeof form>>({});
@@ -27,7 +29,7 @@ async function submit(): Promise<void> {
   submitting.value = true;
   try {
     await auth.register(parsed.data);
-    await router.replace({ name: "home" });
+    await router.replace(afterSignIn(route));
   } catch (error) {
     if (error instanceof ApiError && error.status === 409)
       errors.value = { email: "Cette adresse est déjà utilisée." };
@@ -48,7 +50,11 @@ async function submit(): Promise<void> {
   </p>
 
   <form novalidate class="mt-7 space-y-4" @submit.prevent="submit">
-    <FormField id="register-first-name" label="Prénom" :error="errors.firstName">
+    <FormField
+      id="register-first-name"
+      label="Prénom"
+      :error="errors.firstName"
+    >
       <BaseInput
         id="register-first-name"
         v-model="form.firstName"
@@ -59,7 +65,11 @@ async function submit(): Promise<void> {
       />
     </FormField>
 
-    <FormField id="register-email" label="Adresse électronique" :error="errors.email">
+    <FormField
+      id="register-email"
+      label="Adresse électronique"
+      :error="errors.email"
+    >
       <BaseInput
         id="register-email"
         v-model="form.email"
@@ -70,7 +80,11 @@ async function submit(): Promise<void> {
       />
     </FormField>
 
-    <FormField id="register-password" label="Mot de passe" :error="errors.password">
+    <FormField
+      id="register-password"
+      label="Mot de passe"
+      :error="errors.password"
+    >
       <PasswordInput
         id="register-password"
         v-model="form.password"
@@ -80,18 +94,30 @@ async function submit(): Promise<void> {
       />
     </FormField>
 
-    <p v-if="formError" role="alert" class="rounded-2xl bg-status-cr/10 px-4 py-3 text-sm text-status-cr">
+    <p
+      v-if="formError"
+      role="alert"
+      class="rounded-2xl bg-status-cr/10 px-4 py-3 text-sm text-status-cr"
+    >
       {{ formError }}
     </p>
 
-    <BaseButton type="submit" size="lg" class="mt-2 w-full" :disabled="submitting">
+    <BaseButton
+      type="submit"
+      size="lg"
+      class="mt-2 w-full"
+      :disabled="submitting"
+    >
       {{ submitting ? "Création…" : "Créer mon compte" }}
     </BaseButton>
   </form>
 
   <p class="mt-6 text-center text-sm text-ink-muted">
     Déjà un compte ?
-    <RouterLink :to="{ name: 'login' }" class="font-medium text-accent underline-offset-4 hover:underline">
+    <RouterLink
+      :to="{ name: 'login', query: route.query }"
+      class="font-medium text-accent underline-offset-4 hover:underline"
+    >
       Se connecter
     </RouterLink>
   </p>

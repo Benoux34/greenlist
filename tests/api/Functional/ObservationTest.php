@@ -44,17 +44,33 @@ final class ObservationTest extends ApiTestCase
 
     public function testCreatingAnObservationResolvesTheSpecies(): void
     {
-        $this->loginAs(UserFactory::createOne());
+        $me = UserFactory::createOne(['firstName' => 'Ana']);
+        $this->loginAs($me);
 
         $created = $this->json('POST', '/api/observations', self::INPUT);
 
         $this->assertStatus(201);
+        self::assertSame(['id' => (string) $me->getId(), 'firstName' => 'Ana'], $created['author']);
+        self::assertSame('friends', $created['visibility']);
         self::assertSame(['inatId' => 42069, 'scientificName' => 'Vulpes vulpes', 'vernacularName' => 'Renard roux', 'category' => 'fauna'], $created['species']);
         self::assertSame('2026-06-01T08:30:00+00:00', $created['observedAt']);
         self::assertSame(2, $created['count']);
         self::assertSame('Près du ruisseau', $created['notes']);
         self::assertSame([], $created['photos']);
         self::assertCount(1, $this->json('GET', '/api/observations/map'));
+    }
+
+    public function testAnObservationCanBeKeptFromFriends(): void
+    {
+        $this->loginAs(UserFactory::createOne());
+
+        $created = $this->json('POST', '/api/observations', [...self::INPUT, 'visibility' => 'private']);
+        $this->assertStatus(201);
+        self::assertSame('private', $created['visibility']);
+
+        $edited = $this->json('PATCH', '/api/observations/'.$created['id'], [...self::INPUT, 'visibility' => 'friends']);
+        $this->assertStatus(200);
+        self::assertSame('friends', $edited['visibility']);
     }
 
     public function testAKnownSpeciesIsReused(): void
@@ -82,6 +98,7 @@ final class ObservationTest extends ApiTestCase
         yield 'notes too long' => [['notes' => str_repeat('a', 2001)]];
         yield 'unknown species' => [['inatId' => 999]];
         yield 'a kingdom is not a species' => [['inatId' => 47126]];
+        yield 'unknown visibility' => [['visibility' => 'everyone']];
     }
 
     /**

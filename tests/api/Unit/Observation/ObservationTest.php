@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Observation;
 
 use App\Observation\Entity\Observation;
+use App\Observation\Entity\Visibility;
 use App\Observation\Exception\PhotoNotFoundException;
 use App\Observation\Exception\TooManyPhotosException;
 use App\Species\Entity\Species;
@@ -33,7 +34,7 @@ final class ObservationTest extends TestCase
         $observation = $this->observation();
         $oak = new Species(56133, 'Quercus robur', 'Chêne pédonculé', 'Plantae');
 
-        $observation->edit($oak, new \DateTimeImmutable('2026-05-02T07:00:00+02:00'), 45.5, 5.5, 3, ' Un grand chêne ');
+        $observation->edit($oak, new \DateTimeImmutable('2026-05-02T07:00:00+02:00'), 45.5, 5.5, 3, ' Un grand chêne ', Visibility::Private);
 
         self::assertSame($oak, $observation->getSpecies());
         self::assertSame('2026-05-02T05:00:00+00:00', $observation->getObservedAt()->format(\DATE_ATOM));
@@ -41,6 +42,12 @@ final class ObservationTest extends TestCase
         self::assertSame(5.5, $observation->getLongitude());
         self::assertSame(3, $observation->getCount());
         self::assertSame('Un grand chêne', $observation->getNotes());
+        self::assertSame(Visibility::Private, $observation->getVisibility());
+    }
+
+    public function testFriendsSeeANewObservationUnlessToldOtherwise(): void
+    {
+        self::assertSame(Visibility::Friends, $this->observation()->getVisibility());
     }
 
     public function testAnObservationHoldsThreePhotosAtMost(): void

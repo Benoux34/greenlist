@@ -56,6 +56,22 @@ describe("LoginForm", () => {
     expect(router.currentRoute.value.name).toBe("home");
   });
 
+  it("goes back to the invitation it was opened for", async () => {
+    login.mockResolvedValue(undefined);
+    const { wrapper, router } = await mountAt("/login?redirect=%2F%3Finvitation%3Dabc");
+
+    await fill(wrapper, "ana@example.fr", "motdepasse123");
+
+    expect(router.currentRoute.value.fullPath).toBe("/?invitation=abc");
+  });
+
+  it("keeps the way back when going to the sign-up", async () => {
+    const { wrapper } = await mountAt("/login?redirect=%2F%3Finvitation%3Dabc");
+
+    const link = wrapper.findAll("a").find((anchor) => anchor.text() === "Créer un compte");
+    expect(link?.attributes("href")).toBe("/register?redirect=/?invitation=abc");
+  });
+
   it("says when the email or the password is wrong", async () => {
     login.mockRejectedValue(new ApiError(401));
     const { wrapper } = await mountAt("/login");

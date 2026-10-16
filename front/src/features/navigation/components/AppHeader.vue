@@ -4,7 +4,7 @@ import BaseButton from "@/shared/components/BaseButton.vue";
 import { GLASS } from "@/shared/utils/overlay";
 import AccountMenu from "@/features/auth/components/AccountMenu.vue";
 
-const emit = defineEmits<{ create: [] }>();
+const emit = defineEmits<{ create: []; friends: [] }>();
 </script>
 
 <template>
@@ -12,7 +12,10 @@ const emit = defineEmits<{ create: [] }>();
     class="pointer-events-none fixed inset-x-0 top-0 z-30 px-4 pt-[max(1rem,env(safe-area-inset-top))] lg:px-6"
   >
     <div class="flex items-center justify-between gap-3">
-      <div class="pointer-events-auto rounded-full py-1.5 pr-4 pl-1.5" :class="GLASS">
+      <div
+        class="pointer-events-auto rounded-full py-1.5 pr-4 pl-1.5"
+        :class="GLASS"
+      >
         <AppLogo />
       </div>
 
@@ -39,7 +42,7 @@ const emit = defineEmits<{ create: [] }>();
           </BaseButton>
         </div>
 
-        <AccountMenu />
+        <AccountMenu @friends="emit('friends')" />
       </div>
     </div>
   </header>

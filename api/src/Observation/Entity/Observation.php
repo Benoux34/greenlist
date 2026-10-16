@@ -47,6 +47,9 @@ final class Observation
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes;
 
+    #[ORM\Column(enumType: Visibility::class, options: ['default' => Visibility::Friends->value])]
+    private Visibility $visibility;
+
     #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
     private array $photos = [];
 
@@ -61,11 +64,12 @@ final class Observation
         float $longitude,
         ?int $count = null,
         ?string $notes = null,
+        Visibility $visibility = Visibility::Friends,
     ) {
         $this->id = Uuid::v7();
         $this->author = $author;
         $this->createdAt = new \DateTimeImmutable();
-        $this->edit($species, $observedAt, $latitude, $longitude, $count, $notes);
+        $this->edit($species, $observedAt, $latitude, $longitude, $count, $notes, $visibility);
     }
 
     public function edit(
@@ -75,6 +79,7 @@ final class Observation
         float $longitude,
         ?int $count,
         ?string $notes,
+        Visibility $visibility,
     ): void {
         $notes = trim($notes ?? '');
 
@@ -84,6 +89,7 @@ final class Observation
         $this->longitude = $longitude;
         $this->count = $count;
         $this->notes = '' === $notes ? null : $notes;
+        $this->visibility = $visibility;
     }
 
     public function getId(): Uuid
@@ -119,6 +125,11 @@ final class Observation
     public function getNotes(): ?string
     {
         return $this->notes;
+    }
+
+    public function getVisibility(): Visibility
+    {
+        return $this->visibility;
     }
 
     public function getAuthor(): User

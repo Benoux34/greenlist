@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from "vue";
+import { defineAsyncComponent, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import LocateButton from "@/features/map/components/LocateButton.vue";
 import MapLoader from "@/features/map/components/MapLoader.vue";
 import { useMyPosition } from "@/features/map/composables/useMyPosition";
@@ -11,11 +12,15 @@ import ObservationSheet from "@/features/observations/components/ObservationShee
 import ObservationsPanel from "@/features/observations/components/ObservationsPanel.vue";
 import ObservationsStatus from "@/features/observations/components/ObservationsStatus.vue";
 import PlacementHint from "@/features/observations/components/PlacementHint.vue";
+import FriendsPanel from "@/features/friends/components/FriendsPanel.vue";
+import InvitationDialog from "@/features/friends/components/InvitationDialog.vue";
 import { useObservationDraft } from "@/features/observations/composables/useObservationDraft";
 import { useObservationFilters } from "@/features/observations/composables/useObservationFilters";
 import { useObservations } from "@/features/observations/composables/useObservations";
 import { useObservationSelection } from "@/features/observations/composables/useObservationSelection";
 import type { Observation } from "@/features/observations/types";
+
+const { invitation } = defineProps<{ invitation: string | null }>();
 
 const ObservationsMap = defineAsyncComponent({
   loader: () => import("@/features/map/components/ObservationsMap.vue"),
@@ -45,8 +50,14 @@ const {
   placeAtMyPosition,
 } = useObservationDraft(findMyPosition);
 
+const router = useRouter();
 const isListOpen = ref(false);
+const isFriendsOpen = ref(false);
 const toDelete = ref<Observation | null>(null);
+
+watch([selected, isDrafting], ([observation, drafting]) => {
+  if (observation !== null || drafting) isFriendsOpen.value = false;
+});
 
 function openForm(observation: Observation | null = null): void {
   selected.value = null;
@@ -70,6 +81,22 @@ function deleted(observation: Observation): void {
   toDelete.value = null;
   remove(observation);
 }
+
+function openFriends(): void {
+  cancelDraft();
+  selected.value = null;
+  isListOpen.value = false;
+  isFriendsOpen.value = true;
+}
+
+async function closeInvitation(): Promise<void> {
+  await router.replace({ name: "home" });
+}
+
+async function joined(): Promise<void> {
+  openFriends();
+  await Promise.all([closeInvitation(), reload()]);
+}
 </script>
 
 <template>
@@ -88,7 +115,7 @@ function deleted(observation: Observation): void {
       @place="place"
     />
 
-    <AppHeader @create="openForm()" />
+    <AppHeader @create="openForm()" @friends="openFriends" />
 
     <ObservationsPanel
       v-model:filters="filters"
@@ -112,6 +139,7 @@ function deleted(observation: Observation): void {
     />
 
     <ObservationsStatus
+      v-if="!isFriendsOpen"
       :total="observations?.length ?? null"
       :matching="filtered.length"
       :failed="hasFailed"
@@ -141,6 +169,15 @@ function deleted(observation: Observation): void {
       :observation="editing"
       @saved="saved"
       @cancel="cancelDraft"
+    />
+
+    <FriendsPanel v-if="isFriendsOpen" @close="isFriendsOpen = false" />
+
+    <InvitationDialog
+      v-if="invitation"
+      :token="invitation"
+      @accepted="joined"
+      @close="closeInvitation"
     />
 
     <ObservationDeleteDialog

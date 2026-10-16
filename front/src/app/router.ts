@@ -32,7 +32,22 @@ const router = createRouter({
       component: ForgotPasswordView,
       meta: { public: true },
     },
-    { path: "/", name: "home", component: HomeView },
+    {
+      path: "/",
+      name: "home",
+      component: HomeView,
+      props: ({ query }) => ({
+        invitation:
+          typeof query.invitation === "string" ? query.invitation : null,
+      }),
+    },
+    {
+      path: "/invitation/:token",
+      redirect: ({ params }) => ({
+        path: "/",
+        query: { invitation: params.token },
+      }),
+    },
     { path: "/:pathMatch(.*)*", redirect: { name: "home" } },
   ],
 });
@@ -41,7 +56,10 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore();
   await auth.load();
 
-  if (!to.meta.public && !auth.user) return { name: "login" };
+  if (!to.meta.public && !auth.user)
+    return to.fullPath === "/"
+      ? { name: "login" }
+      : { name: "login", query: { redirect: to.fullPath } };
   if (to.meta.public && auth.user) return { name: "home" };
 });
 

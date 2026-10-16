@@ -3,6 +3,8 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../store";
 
+const emit = defineEmits<{ friends: [] }>();
+
 const auth = useAuthStore();
 const router = useRouter();
 
@@ -35,6 +37,15 @@ async function logout(): Promise<void> {
         {{ auth.user?.email }}
       </span>
     </p>
+    <button
+      type="button"
+      popovertarget="account-menu"
+      popovertargetaction="hide"
+      class="flex min-h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm transition-colors hover:bg-paper-muted"
+      @click="emit('friends')"
+    >
+      Mes amis
+    </button>
     <button
       type="button"
       class="flex min-h-11 w-full cursor-pointer items-center rounded-xl px-3 text-left text-sm transition-colors hover:bg-paper-muted"

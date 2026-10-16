@@ -26,6 +26,7 @@ final readonly class UpdateObservation
             $input->longitude,
             $input->count,
             $input->notes,
+            $input->visibility,
         );
 
         $this->observations->save($observation);

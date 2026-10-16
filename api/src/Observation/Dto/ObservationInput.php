@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observation\Dto;
 
+use App\Observation\Entity\Visibility;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class ObservationInput
@@ -26,6 +27,8 @@ final readonly class ObservationInput
 
         #[Assert\Length(max: 2000)]
         public ?string $notes = null,
+
+        public Visibility $visibility = Visibility::Friends,
     ) {
     }
 }
